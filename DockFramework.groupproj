@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{BB79C9EC-55BE-430A-8067-234F38B3F49E}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="FmxDock.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Dock.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="FmxDock">
+        <MSBuild Projects="FmxDock.dproj"/>
+    </Target>
+    <Target Name="FmxDock:Clean">
+        <MSBuild Projects="FmxDock.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FmxDock:Make">
+        <MSBuild Projects="FmxDock.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Dock">
+        <MSBuild Projects="Dock.dproj"/>
+    </Target>
+    <Target Name="Dock:Clean">
+        <MSBuild Projects="Dock.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Dock:Make">
+        <MSBuild Projects="Dock.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="FmxDock;Dock"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="FmxDock:Clean;Dock:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="FmxDock:Make;Dock:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

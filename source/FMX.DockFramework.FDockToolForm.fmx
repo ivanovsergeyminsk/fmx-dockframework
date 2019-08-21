@@ -1,0 +1,13 @@
+object FDockToolForm: TFDockToolForm
+  Left = 0
+  Top = 0
+  BorderStyle = None
+  ClientHeight = 480
+  ClientWidth = 640
+  Transparency = True
+  FormStyle = StayOnTop
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+end
