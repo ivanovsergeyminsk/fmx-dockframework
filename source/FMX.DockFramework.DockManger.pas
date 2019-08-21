@@ -4,8 +4,13 @@ interface
 
 uses
   System.SysUtils, System.Classes, FMX.Types, FMX.Controls, FMX.Layouts, FMX.StdCtrls,
-  FMX.Objects, System.UITypes, System.Messaging, System.Types, FMX.Forms,
-  FMX.DockFramework.FDockToolForm, FMX.DockFramework.DockTypes;
+  FMX.Objects, System.UITypes, System.Messaging, System.Types, FMX.Forms, FMX.TabControl,
+
+  FMX.DockFramework.FDockToolForm,
+  FMX.DockFramework.DockTypes,
+  FMX.DockFramework.DockMessages,
+  FMX.DockFramework.DockForm
+  ;
 
 type
   TPictureDockTool = class(TGridPanelLayout)
@@ -69,7 +74,7 @@ type
     'L60.0064430236816,281.771484375 L59.999942779541,297.000244140625 L30,297.000244140625 '+
     'L30.0146007537842,281.794189453125 L15.2173891067505,266.996765136719 L0,267 Z ';
   private
-    FActiveElement: TDockToolElement;
+    FActiveElement: TDockElement;
     FDocks: TDocks;
     FColor: TAlphaColor;
 
@@ -87,7 +92,7 @@ type
     procedure CreatePictures;
     procedure SetPictures;
 
-    procedure SetActiveElement(const Value: TDockToolElement);
+    procedure SetActiveElement(const Value: TDockElement);
     procedure SetColor(const Value: TAlphaColor);
     function GetBottomRect: TRectF;
     function GetClientRect: TRectF;
@@ -101,7 +106,7 @@ type
     destructor Destroy; override;
 
   published
-    property ActiveElement: TDockToolElement read FActiveElement write SetActiveElement;
+    property ActiveElement: TDockElement read FActiveElement write SetActiveElement;
     property Color: TAlphaColor read FColor write SetColor;
 
     property TopRect: TRectF read GetTopRect;
@@ -116,61 +121,96 @@ type
   TCustomDockManger = class(TLayout)
   private
     { Private declarations }
-    MessageManager: TMessageManager;
-
     FDockToolForm: TFDockToolForm;
 
     FPreview: TRectangle;
+    FDockLayoutTop:     TLayout;
     FDockLayoutLeft:    TLayout;
     FDockLayoutRight:   TLayout;
     FDockLayoutBottom:  TLayout;
     FDockLayoutClient:  TLayout;
+    FSplitterTop: TSplitter;
     FSplitterLeft: TSplitter;
     FSplitterBottom: TSplitter;
     FSplitterRight: TSplitter;
 
+    FDockTabTop: TTabControl;
+    FDockTabLeft: TTabControl;
+    FDockTabBottom: TTabControl;
+    FDockTabRight: TTabControl;
+    FDockTabClient: TTabControl;
+
     FDockToolLayout: TLayout;
     FDockTool: TDockTool;
+
+    FTabItemDrag: boolean;
+    FTabItemDragPosition: TPointF;
     function GetDockToolSize: single;
     procedure SetDockToolSize(const Value: single);
 
     function GetVisibleDockTool: boolean;
     procedure SetVisibleDockTool(const Value: boolean);
 
-    function GetActiveElement: TDockToolElement;
-    procedure SetActiveElement(const Value: TDockToolElement);
+    function GetActiveElement: TDockElement;
+    procedure SetActiveElement(const Value: TDockElement);
 
     function  GetDocToolColor: TAlphaColor;
     procedure SetDockToolColor(const Value: TAlphaColor);
 
-    procedure SubscribeMessages;
-    procedure EventMoving(const X, Y: single; const Docks: TDocks);
-    procedure EventMoved(const X, Y: single; const Docks: TDocks);
+    procedure Subscribes;
+    procedure SubscribeDockMessageMoving;
+    procedure SubscribeDockMessageMoved;
+    procedure SubscribeDockMessageDock;
 
-    procedure SetPicture(const X, Y: single);
+
+    procedure EventMoving(const X, Y: single; const Docks: TDocks);
+    procedure EventMoved(const X, Y: single; const Docks: TDocks; Form: TForm);
+
+    procedure SetDockToolPicture(const X, Y: single);
+
+    procedure DoDock(const SelectedDock: TDockElement; Form: TForm);
+    procedure DoDockTab(TabControl: TTabControl; Form: TForm);
+    procedure DoUnDockTab(TabItem: TTabItem);
+
+
+    procedure CreateDocks;
+
+    procedure CreateLeftDock;
+    procedure CreateBottomDock;
+    procedure CreateRightDock;
+    procedure CreateTopDock;
+    procedure CreateClientDock;
+
+    procedure CreatePreview;
+    procedure CreateDockTool;
+
+    procedure TabItemMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure TabItemMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure TabItemMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Single);
   protected
     { Protected declarations }
+    property DockToolVisible: boolean read GetVisibleDockTool write SetVisibleDockTool;
   public
-    { Public declarations }
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
   published
     { Published declarations }
 
     property DockToolSize: single read GetDockToolSize write SetDockToolSize;
-    property DockToolVisible: boolean read GetVisibleDockTool write SetVisibleDockTool;
     property DockToolColor: TAlphaColor read GetDocToolColor write SetDockToolColor;
-    property DockToolElement: TDockToolElement read GetActiveElement write SetActiveElement;
+    property DockToolElement: TDockElement read GetActiveElement write SetActiveElement;
   end;
 
   TDockManger = class(TCustomDockManger)
   published
     { Published declarations }
 
-    property DockToolSize: single read GetDockToolSize write SetDockToolSize;
-    property DockToolVisible: boolean read GetVisibleDockTool write SetVisibleDockTool;
-    property DockToolColor: TAlphaColor read GetDocToolColor write SetDockToolColor;
-    property DockToolElement: TDockToolElement read GetActiveElement write SetActiveElement;
+    property DockToolSize;
+    property DockToolColor;
+    property DockToolElement;
   end;
 
 procedure Register;
@@ -243,50 +283,62 @@ constructor TCustomDockManger.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FDockLayoutLeft := TLayout.Create(self);
-  FDockLayoutLeft.Align  := TAlignLayout.Left;
-  FDockLayoutLeft.Parent := self;
-  FDockLayoutLeft.Stored := false;
+  CreateDocks;
 
-  FSplitterLeft := TSplitter.Create(self);
-  FSplitterLeft.Align  := TAlignLayout.Left;
-  FSplitterLeft.Parent := self;
-  FSplitterLeft.Stored := false;
+  CreatePreview;
+  CreateDockTool;
 
-  FDockLayoutRight := TLayout.Create(self);
-  FDockLayoutRight.Align  := TAlignLayout.Right;
-  FDockLayoutRight.Parent := self;
-  FDockLayoutRight.Stored := false;
+  Subscribes;
 
-  FSplitterRight := TSplitter.Create(self);
-  FSplitterRight.Align  := TAlignLayout.Right;
-  FSplitterRight.Parent := self;
-  FSplitterRight.Stored := false;
+  if (csDesigning in ComponentState) or (csDesignInstance in ComponentState)
+    then DockToolVisible := true
+    else DockToolVisible := false;
+end;
 
+procedure TCustomDockManger.CreateBottomDock;
+begin
   FDockLayoutBottom := TLayout.Create(self);
   FDockLayoutBottom.Align  := TAlignLayout.MostBottom;
   FDockLayoutBottom.Parent := self;
-  FDockLayoutBottom.Stored  := false;
+  FDockLayoutBottom.Stored := false;
 
   FSplitterBottom := TSplitter.Create(self);
-  FSplitterBottom.Align := TAlignLayout.Bottom;
+  FSplitterBottom.Align  := TAlignLayout.Bottom;
   FSplitterBottom.Parent := self;
   FSplitterBottom.Stored := false;
 
+  FDockTabBottom := TTabControl.Create(self);
+  FDockTabBottom.Align   := TAlignLayout.Client;
+  FDockTabBottom.Parent  := FDockLayoutBottom;
+  FDockTabBottom.Visible := false;
+  FDockTabBottom.Stored  := false;
+end;
+
+procedure TCustomDockManger.CreateClientDock;
+begin
   FDockLayoutClient := TLayout.Create(self);
   FDockLayoutClient.Align  := TAlignLayout.Client;
   FDockLayoutClient.Parent := self;
-  FDockLayoutClient.Stored  := false;
+  FDockLayoutClient.Stored := false;
 
-  FPreview := TRectangle.Create(self);
-  FPreview.Align := TAlignLayout.Contents;
-  FPreview.Margins.Top    := 5;
-  FPreview.Margins.Left   := 5;
-  FPreview.Margins.Bottom := 5;
-  FPreview.Margins.Right  := 5;
-  FPreview.Opacity        := 0.3;
-  FPreview.Stored         := false;
+  FDockTabClient := TTabControl.Create(self);
+  FDockTabClient.Parent  := FDockLayoutClient;
+  FDockTabClient.Align   := TAlignLayout.Client;
+  FDockTabClient.Visible := false;
+  FDockTabClient.Stored  := false;
+end;
 
+procedure TCustomDockManger.CreateDocks;
+begin
+  CreateTopDock;
+  CreateLeftDock;
+  CreateRightDock;
+  CreateBottomDock;
+  CreateClientDock;
+end;
+
+procedure TCustomDockManger.CreateDockTool;
+begin
   FDockToolLayout := TLayout.Create(self);
   FDockToolLayout.Align   := TAlignLayout.Contents;
   FDockToolLayout.Parent  := self;
@@ -310,13 +362,169 @@ begin
     FDockTool.Opacity          := 0.5;
   end;
 
-  SubscribeMessages;
+end;
+
+procedure TCustomDockManger.CreateLeftDock;
+begin
+  FDockLayoutLeft := TLayout.Create(self);
+  FDockLayoutLeft.Align  := TAlignLayout.Left;
+  FDockLayoutLeft.Parent := self;
+  FDockLayoutLeft.Stored := false;
+
+  FSplitterLeft := TSplitter.Create(self);
+  FSplitterLeft.Align  := TAlignLayout.Left;
+  FSplitterLeft.Parent := self;
+  FSplitterLeft.Stored := false;
+
+  FDockTabLeft := TTabControl.Create(self);
+  FDockTabLeft.Align   := TAlignLayout.Client;
+  FDockTabLeft.Parent  := FDockLayoutLeft;
+  FDockTabLeft.Visible := false;
+  FDockTabLeft.Stored  := false;
+end;
+
+procedure TCustomDockManger.CreatePreview;
+begin
+  FPreview := TRectangle.Create(self);
+  FPreview.Align := TAlignLayout.Contents;
+  FPreview.Margins.Top    := 5;
+  FPreview.Margins.Left   := 5;
+  FPreview.Margins.Bottom := 5;
+  FPreview.Margins.Right  := 5;
+  FPreview.Opacity        := 0.3;
+  FPreview.Stored         := false;
+end;
+
+procedure TCustomDockManger.CreateRightDock;
+begin
+  FDockLayoutRight := TLayout.Create(self);
+  FDockLayoutRight.Align  := TAlignLayout.Right;
+  FDockLayoutRight.Parent := self;
+  FDockLayoutRight.Stored := false;
+
+  FSplitterRight := TSplitter.Create(self);
+  FSplitterRight.Align  := TAlignLayout.Right;
+  FSplitterRight.Parent := self;
+  FSplitterRight.Stored := false;
+
+  FDockTabRight := TTabControl.Create(self);
+  FDockTabRight.Align   := TAlignLayout.Client;
+  FDockTabRight.Parent  := FDockLayoutRight;
+  FDockTabRight.Visible := false;
+  FDockTabRight.Stored  := false;
+end;
+
+procedure TCustomDockManger.CreateTopDock;
+begin
+  FDockLayoutTop := TLayout.Create(self);
+  FDockLayoutTop.Align  := TAlignLayout.Top;
+  FDockLayoutTop.Parent := self;
+  FDockLayoutTop.Stored := false;
+
+  FSplitterTop := TSplitter.Create(self);
+  FSplitterTop.Align  := TAlignLayout.Top;
+  FSplitterTop.Parent := self;
+  FSplitterTop.Stored := false;
+
+  FDockTabTop := TTabControl.Create(self);
+  FDockTabTop.Align   := TAlignLayout.Client;
+  FDockTabTop.Parent  := FDockLayoutTop;
+  FDockTabTop.Visible := false;
+  FDockTabTop.Stored  := false;
 end;
 
 destructor TCustomDockManger.Destroy;
 begin
 
   inherited Destroy;
+end;
+
+procedure TCustomDockManger.DoDock(const SelectedDock: TDockElement; Form: TForm);
+begin
+  self.BeginUpdate;
+  try
+    case SelectedDock of
+      TDockElement.none:   ;
+      TDockElement.Top:    DoDockTab(FDockTabTop, Form);
+      TDockElement.Left:   DoDockTab(FDockTabLeft, Form);
+      TDockElement.Bottom: DoDockTab(FDockTabBottom, Form);
+      TDockElement.Right:  DoDockTab(FDockTabRight, Form);
+      TDockElement.Client: DoDockTab(FDockTabClient, Form);
+    end;
+  finally
+    self.EndUpdate;
+  end;
+end;
+
+procedure TCustomDockManger.DoDockTab(TabControl: TTabControl; Form: TForm);
+var
+  TabItem: TTabItem;
+  FmxObject: TFmxObject;
+begin
+  if not assigned(TabControl) then exit;
+  
+  TabControl.Visible := true;
+
+  TabItem := TabControl.Add;
+  TabItem.Tag := integer(Form);
+  TabItem.Text := Form.Caption;
+  TabItem.OnMouseDown := TabItemMouseDown;
+  TabItem.OnMouseUp   := TabItemMouseUp;
+  TabItem.OnMouseMove := TabItemMouseMove;
+
+  for FmxObject in Form.Children.ToArray do
+    FmxObject.Parent := TabItem;
+
+  Form.Visible := false;
+end;
+
+procedure TCustomDockManger.DoUnDockTab(TabItem: TTabItem);
+var
+  Form: TForm;
+  Content,
+  FmxObjectForm: TFmxObject;
+  TabControl: TTabControl;
+begin
+  Form := TForm(TabItem.Tag);
+  TabControl := TabItem.TabControl;
+  self.BeginUpdate;
+  try
+    Form.BeginUpdate;
+    try
+      for Content in TabItem.Children.ToArray do begin
+        if not (Content.Name = 'TabItemContent_') then
+          continue;
+
+        for FmxObjectForm in Content.Children.ToArray do begin
+          Form.AddObject(FmxObjectForm);
+        end;
+        break;
+      end;
+    finally
+      Form.EndUpdate;
+    end;
+
+    if TabControl.TabCount - 1 > 0 then begin
+      if TabItem.Index > 0
+        then TabControl.ActiveTab := TabControl.Tabs[TabItem.Index-1]
+        else TabControl.ActiveTab := TabControl.Tabs[TabItem.Index+1];
+    end;
+
+    TabItem.Parent := nil;
+    TabItem.Free;
+
+    if TabControl.TabCount = 0 then
+      TabControl.Visible := false;
+
+    FTabItemDrag := false;
+  finally
+    self.EndUpdate;
+  end;
+
+  Form.Left := Trunc(Screen.MousePos.X-150);
+  Form.Top  := Trunc(Screen.MousePos.Y - 5);
+  Form.Show;
+  Form.StartWindowDrag;
 end;
 
 procedure TCustomDockManger.EventMoving(const X, Y: single; const Docks: TDocks);
@@ -333,10 +541,10 @@ begin
 
   self.FDockTool.Docks := Docks;
   self.DockToolVisible := true;
-  SetPicture(X, Y);
+  SetDockToolPicture(X, Y);
 end;
 
-function TCustomDockManger.GetActiveElement: TDockToolElement;
+function TCustomDockManger.GetActiveElement: TDockElement;
 begin
   result := FDockTool.ActiveElement;
 end;
@@ -356,17 +564,17 @@ begin
   result := FDockTool.Visible;
 end;
 
-procedure TCustomDockManger.SetActiveElement(const Value: TDockToolElement);
+procedure TCustomDockManger.SetActiveElement(const Value: TDockElement);
 begin
   FDockTool.ActiveElement := Value;
 
   case Value of
-    TDockToolElement.none:   FPreview.Parent := nil;
-    TDockToolElement.Top:    FPreview.Parent := FDockLayoutClient;
-    TDockToolElement.Left:   FPreview.Parent := FDockLayoutLeft;
-    TDockToolElement.Bottom: FPreview.Parent := FDockLayoutBottom;
-    TDockToolElement.Right:  FPreview.Parent := FDockLayoutRight;
-    TDockToolElement.Client: FPreview.Parent := FDockLayoutClient;
+    TDockElement.none:   FPreview.Parent := nil;
+    TDockElement.Top:    FPreview.Parent := FDockLayoutTop;
+    TDockElement.Left:   FPreview.Parent := FDockLayoutLeft;
+    TDockElement.Bottom: FPreview.Parent := FDockLayoutBottom;
+    TDockElement.Right:  FPreview.Parent := FDockLayoutRight;
+    TDockElement.Client: FPreview.Parent := FDockLayoutClient;
   end;
 end;
 
@@ -382,37 +590,37 @@ begin
   FDockTool.Height  := FDockTool.Width;
 end;
 
-procedure TCustomDockManger.SetPicture(const X, Y: single);
+procedure TCustomDockManger.SetDockToolPicture(const X, Y: single);
 var
   MousePoint: TPointF;
 begin
   MousePoint := TPointF.Create(X, Y);
-  if FDockTool.GetBottomRect.Contains(MousePoint) and (TDockToolElement.Bottom in FDockTool.Docks) then begin
-    DockToolElement := TDockToolElement.Bottom;
+  if FDockTool.GetBottomRect.Contains(MousePoint) and (TDockElement.Bottom in FDockTool.Docks) then begin
+    DockToolElement := TDockElement.Bottom;
     exit;
   end;
 
-  if FDockTool.GetClientRect.Contains(MousePoint) and (TDockToolElement.Client in FDockTool.Docks) then begin
-    DockToolElement := TDockToolElement.Client;
+  if FDockTool.GetClientRect.Contains(MousePoint) and (TDockElement.Client in FDockTool.Docks) then begin
+    DockToolElement := TDockElement.Client;
     exit;
   end;
 
-  if FDockTool.GetLeftRect.Contains(MousePoint) and (TDockToolElement.Left in FDockTool.Docks) then begin
-    DockToolElement := TDockToolElement.Left;
+  if FDockTool.GetLeftRect.Contains(MousePoint) and (TDockElement.Left in FDockTool.Docks) then begin
+    DockToolElement := TDockElement.Left;
     exit;
   end;
 
-  if FDockTool.GetRightRect.Contains(MousePoint) and (TDockToolElement.Right in FDockTool.Docks) then begin
-    DockToolElement := TDockToolElement.Right;
+  if FDockTool.GetRightRect.Contains(MousePoint) and (TDockElement.Right in FDockTool.Docks) then begin
+    DockToolElement := TDockElement.Right;
     exit;
   end;
 
-  if FDockTool.GetTopRect.Contains(MousePoint) and (TDockToolElement.Top in FDockTool.Docks) then begin
-    DockToolElement := TDockToolElement.Top;
+  if FDockTool.GetTopRect.Contains(MousePoint) and (TDockElement.Top in FDockTool.Docks) then begin
+    DockToolElement := TDockElement.Top;
     exit;
   end;
 
-  DockToolElement := TDockToolElement.none;
+  DockToolElement := TDockElement.none;
 end;
 
 procedure TCustomDockManger.SetVisibleDockTool(const Value: boolean);
@@ -420,37 +628,125 @@ begin
   FDockTool.Visible := Value;
 end;
 
-procedure TCustomDockManger.SubscribeMessages;
+procedure TCustomDockManger.SubscribeDockMessageDock;
+var
+  MessageManager: TMessageManager;
 begin
   MessageManager := TMessageManager.DefaultManager;
 
-  MessageManager.SubscribeToMessage(TMessage<UnicodeString>, procedure(const Sender: TObject; const M: TMessage)
+  MessageManager.SubscribeToMessage(TDockMessageDock, procedure(const Sender: TObject; const M: TMessage)
   var
-    Value: string;
-    ValueM: TArray<string>;
-    LDocks: integer;
-    RDocks: TDocks absolute LDocks;
+    Value: TDockDock;
+    DockForm: TDockForm;
   begin
-    Value := (M as TMessage<UnicodeString>).Value;
-    ValueM := Value.Split(['|']);
+    if not (Sender is TDockForm) then exit;
 
-    if not ValueM[0].Equals('DOCK_MANAGER') then exit;
-
-    if ValueM[1].Equals('MOVING') then begin
-      LDocks := ValueM[4].ToInteger;
-      EventMoving(ValueM[2].ToSingle, ValueM[3].ToSingle, RDocks);
-    end else if ValueM[1].Equals('MOVED') then begin
-      LDocks := ValueM[4].ToInteger;
-      EventMoved(ValueM[2].ToSingle, ValueM[3].ToSingle, RDocks);
-    end;
+    DockForm := Sender as TDockForm;
+    Value := (M as TDockMessageDock).Value;
+    if Value.Dock in Value.AccessDocks then
+      DoDock(Value.Dock, DockForm.Form);
   end
   );
 end;
 
-procedure TCustomDockManger.EventMoved(const X, Y: single; const Docks: TDocks);
+procedure TCustomDockManger.SubscribeDockMessageMoved;
+var
+  MessageManager: TMessageManager;
+begin
+  MessageManager := TMessageManager.DefaultManager;
+
+  MessageManager.SubscribeToMessage(TDockMessageMoved, procedure(const Sender: TObject; const M: TMessage)
+  var
+    Value: TDockMove;
+    DockForm: TDockForm;
+  begin
+    if not (Sender is TDockForm) then exit;
+
+    DockForm := Sender as TDockForm;
+    Value := (M as TDockMessageMoved).Value;
+    EventMoved(Value.MousePosition.X, Value.MousePosition.Y, Value.AccessDocks, DockForm.Form);
+  end
+  );
+end;
+
+procedure TCustomDockManger.SubscribeDockMessageMoving;
+var
+  MessageManager: TMessageManager;
+begin
+  MessageManager := TMessageManager.DefaultManager;
+
+  MessageManager.SubscribeToMessage(TDockMessageMoving, procedure(const Sender: TObject; const M: TMessage)
+  var
+    Value: TDockMove;
+  begin
+    Value := (M as TDockMessageMoving).Value;
+    EventMoving(Value.MousePosition.X, Value.MousePosition.Y, Value.AccessDocks);
+  end
+  );
+end;
+
+procedure TCustomDockManger.Subscribes;
+begin
+  SubscribeDockMessageMoving;
+  SubscribeDockMessageMoved;
+  SubscribeDockMessageDock;
+end;
+
+procedure TCustomDockManger.TabItemMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Single);
+begin
+  if not FTabItemDrag then exit;
+
+  if (abs(FTabItemDragPosition.X-X) > 30)
+  then
+    DoUnDockTab(Sender as TTabItem);
+end;
+
+procedure TCustomDockManger.TabItemMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+  if Button = TMouseButton.mbLeft then begin
+    FTabItemDrag := true;
+    FTabItemDragPosition.X := X;
+    FTabItemDragPosition.Y := Y;
+  end else
+    FTabItemDrag := false;
+end;
+
+procedure TCustomDockManger.TabItemMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+  FTabItemDrag := false;
+end;
+
+procedure TCustomDockManger.EventMoved(const X, Y: single; const Docks: TDocks; Form: TForm);
+var
+  MousePoint: TPointF;
+  SelelectedDock: TDockElement;
 begin
   self.FDockTool.Docks := Docks;
   self.DockToolVisible := false;
+
+  MousePoint := TPointF.Create(X, Y);
+  if FDockTool.GetBottomRect.Contains(MousePoint) and (TDockElement.Bottom in FDockTool.Docks) then begin
+    SelelectedDock := TDockElement.Bottom;
+  end else
+  if FDockTool.GetClientRect.Contains(MousePoint) and (TDockElement.Client in FDockTool.Docks) then begin
+    SelelectedDock := TDockElement.Client;
+  end else
+  if FDockTool.GetLeftRect.Contains(MousePoint) and (TDockElement.Left in FDockTool.Docks) then begin
+    SelelectedDock := TDockElement.Left;
+  end else
+  if FDockTool.GetRightRect.Contains(MousePoint) and (TDockElement.Right in FDockTool.Docks) then begin
+    SelelectedDock := TDockElement.Right;
+  end else
+  if FDockTool.GetTopRect.Contains(MousePoint) and (TDockElement.Top in FDockTool.Docks) then begin
+    SelelectedDock := TDockElement.Top;
+  end else
+    SelelectedDock := TDockElement.none;
+
+  FPreview.Parent := nil;
+  DoDock(SelelectedDock, Form);
 end;
 
 { TDockTool }
@@ -549,15 +845,15 @@ begin
   result.Size := TSizeF.Create(APictureDockTool.Width, APictureDockTool.Height);
 end;
 
-procedure TDockTool.SetActiveElement(const Value: TDockToolElement);
+procedure TDockTool.SetActiveElement(const Value: TDockElement);
 begin
   FActiveElement := Value;
 
-  FViewDockTop.IsActive     := (ActiveElement in [TDockToolElement.Top])    and (ActiveElement in FDocks);
-  FViewDockLeft.IsActive    := (ActiveElement in [TDockToolElement.Left])   and (ActiveElement in FDocks);
-  FViewDockBottom.IsActive  := (ActiveElement in [TDockToolElement.Bottom]) and (ActiveElement in FDocks);
-  FViewDockRight.IsActive   := (ActiveElement in [TDockToolElement.Right])  and (ActiveElement in FDocks);
-  FViewDockClient.IsActive  := (ActiveElement in [TDockToolElement.Client]) and (ActiveElement in FDocks);
+  FViewDockTop.IsActive     := (ActiveElement in [TDockElement.Top])    and (ActiveElement in FDocks);
+  FViewDockLeft.IsActive    := (ActiveElement in [TDockElement.Left])   and (ActiveElement in FDocks);
+  FViewDockBottom.IsActive  := (ActiveElement in [TDockElement.Bottom]) and (ActiveElement in FDocks);
+  FViewDockRight.IsActive   := (ActiveElement in [TDockElement.Right])  and (ActiveElement in FDocks);
+  FViewDockClient.IsActive  := (ActiveElement in [TDockElement.Client]) and (ActiveElement in FDocks);
 end;
 
 procedure TDockTool.SetColor(const Value: TAlphaColor);

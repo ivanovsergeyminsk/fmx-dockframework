@@ -36,6 +36,7 @@ contains
   FMX.DockFramework.DockManger in 'source\FMX.DockFramework.DockManger.pas',
   FMX.DockFramework.DockForm in 'source\FMX.DockFramework.DockForm.pas',
   FMX.DockFramework.DockTypes in 'source\FMX.DockFramework.DockTypes.pas',
-  FMX.DockFramework.FDockToolForm in 'source\FMX.DockFramework.FDockToolForm.pas' {FDockToolForm};
+  FMX.DockFramework.FDockToolForm in 'source\FMX.DockFramework.FDockToolForm.pas' {FDockToolForm},
+  FMX.DockFramework.DockMessages in 'source\FMX.DockFramework.DockMessages.pas';
 
 end.

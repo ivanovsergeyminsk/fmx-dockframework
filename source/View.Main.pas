@@ -16,15 +16,17 @@ type
     ButtonNewDockableForm: TButton;
     ButtonNewSimpleForm: TButton;
     Layout1: TLayout;
-    Memo1: TMemo;
     DockManger1: TDockManger;
+    Button1: TButton;
     procedure ButtonNewDockableFormClick(Sender: TObject);
     procedure ButtonNewSimpleFormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
+    I: integer;
   end;
 
 var
@@ -32,14 +34,28 @@ var
 
 implementation
 
+uses
+  View.DockableFormDefault;
+
 {$R *.fmx}
+
+procedure TViewMain.Button1Click(Sender: TObject);
+var
+  Dockable: TFormDockDefault;
+begin
+  inc(I);
+  Application.CreateForm(TFormDockDefault, Dockable);
+  Dockable.Caption := 'Docktable Default'+I.ToString;
+  Dockable.Show;
+end;
 
 procedure TViewMain.ButtonNewDockableFormClick(Sender: TObject);
 var
   Dockable: TFormDock;
 begin
-  Dockable := TFormDock.Create(Self);
-
+  inc(I);
+  Application.CreateForm(TFormDock, Dockable);
+  Dockable.Caption := 'Docktable '+I.ToString;
   Dockable.Show;
 end;
 
@@ -47,39 +63,15 @@ procedure TViewMain.ButtonNewSimpleFormClick(Sender: TObject);
 var
   Simple: TFormSimple;
 begin
-  Simple := TFormSimple.Create(self);
+  Inc(I);
+  Application.CreateForm(TFormSimple, Simple);
+  Simple.Caption := 'Simple'+I.ToString;
   Simple.Show;
 end;
 
 procedure TViewMain.FormCreate(Sender: TObject);
 begin
-//  MessageManager := TMessageManager.DefaultManager;
-//
-//  MessageManager.SubscribeToMessage(TMessage<UnicodeString>, procedure(const Sender: TObject; const M: TMessage)
-//  var
-//    Value: string;
-//    ValueM: TArray<string>;
-//  begin
-//    Value := (M as TMessage<UnicodeString>).Value;
-//    ValueM := Value.Split(['|']);
-//
-//    if ValueM[0].Equals('DOCK_MANAGER') then begin
-//      if ValueM[1].Equals('MOVING') then begin
-//        self.DockManger1.DockToolVisible := true;
-//
-//      end else if ValueM[1].Equals('MOVED') then begin
-//        self.DockManger1.DockToolVisible := false;
-//      end;
-//
-//    end;
-//
-//
-//    if Memo1.Lines.Count > 100 then
-//      Memo1.Lines.Delete(Memo1.Lines.Count - 1);
-//
-//    Memo1.Lines.Insert(0,Value);
-//  end
-//  );
+  I := 0;
 end;
 
 end.

@@ -12,50 +12,46 @@ object ViewMain: TViewMain
   object Layout1: TLayout
     Align = Top
     Size.Width = 1129.000000000000000000
-    Size.Height = 217.000000000000000000
+    Size.Height = 33.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     object ButtonNewDockableForm: TButton
-      Position.X = 8.000000000000000000
-      Position.Y = 8.000000000000000000
+      Align = Left
+      Position.X = 145.000000000000000000
       Size.Width = 145.000000000000000000
-      Size.Height = 22.000000000000000000
+      Size.Height = 33.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 0
+      TabOrder = 1
       Text = 'NewDockableForm'
       OnClick = ButtonNewDockableFormClick
     end
     object ButtonNewSimpleForm: TButton
-      Position.X = 8.000000000000000000
-      Position.Y = 28.000000000000000000
+      Align = Left
       Size.Width = 145.000000000000000000
-      Size.Height = 22.000000000000000000
+      Size.Height = 33.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 1
+      TabOrder = 2
       Text = 'NewSimpleForm'
       OnClick = ButtonNewSimpleFormClick
     end
-    object Memo1: TMemo
-      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-      DataDetectorTypes = []
-      Align = Right
-      Position.X = 376.000000000000000000
-      Size.Width = 753.000000000000000000
-      Size.Height = 217.000000000000000000
+    object Button1: TButton
+      Align = Left
+      Position.X = 290.000000000000000000
+      Size.Width = 145.000000000000000000
+      Size.Height = 33.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 2
-      Viewport.Width = 749.000000000000000000
-      Viewport.Height = 213.000000000000000000
+      TabOrder = 0
+      Text = 'NewDockableDefaultForm'
+      OnClick = Button1Click
     end
   end
   object DockManger1: TDockManger
     Align = Client
     Size.Width = 1129.000000000000000000
-    Size.Height = 440.000000000000000000
+    Size.Height = 624.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 2
-    DockToolSize = 100.000000000000000000
-    DockToolVisible = True
+    DockToolSize = 200.000000000000000000
     DockToolColor = claSpringgreen
     DockToolElement = none
   end

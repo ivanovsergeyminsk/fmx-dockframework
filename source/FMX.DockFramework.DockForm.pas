@@ -5,25 +5,24 @@ interface
 uses
   System.SysUtils, System.Classes, FMX.Forms,
   System.Generics.Collections, System.SyncObjs,
-
   Winapi.Windows,
-  FMX.DockFramework.DockTypes
+  FMX.DockFramework.DockTypes,
+  FMX.DockFramework.DockMessages
   ;
 
 type
-  TDockForm = class(TComponent)
+  TCustomDockForm = class(TComponent)
   private class var
     CS: TCriticalSection;
-    DockFormList: TDictionary<HWND, TDockForm>;
+    DockFormList: TDictionary<HWND, TCustomDockForm>;
   private
     class constructor Create;
     class destructor Destroy;
 
-    class function TryGetDockForm(Hwnd: HWND; var DockForm: TDockForm): boolean;
-    class procedure AddOrSetDockForm(Hwnd: HWND; DockForm: TDockForm);
+    class function TryGetDockForm(Hwnd: HWND; var DockForm: TCustomDockForm): boolean;
+    class procedure AddOrSetDockForm(Hwnd: HWND; DockForm: TCustomDockForm);
   private
-    { Private declarations }
-    FState: TDockState;
+    FState: TDockElement;
     FDocks: TDocks;
     FForm: TForm;
 
@@ -33,18 +32,29 @@ type
 
     procedure SendMesssageMoving;
     procedure SendMessageMoved;
+    procedure SendMessageDockForm;
 
-    procedure SetState(const Value: TDockState);
-    procedure SetDocks(const Value: TDocks);
+    procedure SubscribeFormCreated;
   protected
-    { Protected declarations }
+    function GetState: TDockElement;
+    function GetDocks: TDocks;
+
+    procedure SetState(const Value: TDockElement);
+    procedure SetDocks(const Value: TDocks);
   public
-    { Public declarations }
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    property Form: TForm read FForm;
   published
-    property State: TDockState read FState write SetState;
-    property Docks: TDocks read FDocks write SetDocks;
+    property State: TDockElement read GetState write SetState;
+    property Docks: TDocks read GetDocks write SetDocks;
+  end;
+
+  TDockForm = class(TCustomDockForm)
+  published
+    property State default TDockElement.none;
+    property Docks default AllDocks;
   end;
 
 procedure Register;
@@ -61,11 +71,11 @@ end;
 
 function DockFormWndProc(Hwnd : HWND; Msg : UINT; WParam : WPARAM; LParam : LPARAM) : LRESULT; stdcall;
 var
-  DockForm: TDockForm;
+  DockForm: TCustomDockForm;
 begin
-  if not TDockForm.DockFormList.TryGetValue(Hwnd, DockForm) then exit;
-
   Result := 0;
+  if not TCustomDockForm.TryGetDockForm(Hwnd, DockForm) then exit;
+
   if (Msg = WM_MOVING) then
     DockForm.SendMesssageMoving;
   if (Msg = WM_CAPTURECHANGED) then
@@ -76,49 +86,59 @@ end;
 
 { TDockForm }
 
-class procedure TDockForm.AddOrSetDockForm(Hwnd: HWND; DockForm: TDockForm);
+class procedure TCustomDockForm.AddOrSetDockForm(Hwnd: HWND; DockForm: TCustomDockForm);
 begin
   CS.Enter;
   try
-    TDockForm.DockFormList.AddOrSetValue(Hwnd, DockForm);
+    TCustomDockForm.DockFormList.AddOrSetValue(Hwnd, DockForm);
   finally
     CS.Leave;
   end;
 end;
 
-constructor TDockForm.Create(AOwner: TComponent);
+constructor TCustomDockForm.Create(AOwner: TComponent);
 begin
-  FDocks := [];
   inherited Create(AOwner);
   if AOwner is TForm
     then FForm := AOwner as TForm
     else FForm := nil;
 
-  if (csDesignInstance in ComponentState) or (csDesigning in ComponentState) then exit;
-
-  InitWinHookMessage;
-  TDockForm.AddOrSetDockForm(FHwnd, self);
+  if (not (csDesignInstance in ComponentState)) and (not (csDesigning in ComponentState)) then begin
+    InitWinHookMessage;
+    TCustomDockForm.AddOrSetDockForm(FHwnd, self);
+    SubscribeFormCreated;
+  end;
 end;
 
-class constructor TDockForm.Create;
+class constructor TCustomDockForm.Create;
 begin
   CS := TCriticalSection.Create;
-  TDockForm.DockFormList := TDictionary<HWND, TDockForm>.Create;
+  TCustomDockForm.DockFormList := TDictionary<HWND, TCustomDockForm>.Create;
 end;
 
-destructor TDockForm.Destroy;
+destructor TCustomDockForm.Destroy;
 begin
 
   inherited Destroy;
 end;
 
-class destructor TDockForm.Destroy;
+function TCustomDockForm.GetDocks: TDocks;
 begin
-  CS.Free;
-  TDockForm.DockFormList.Free;
+  result := FDocks;
 end;
 
-procedure TDockForm.InitWinHookMessage;
+function TCustomDockForm.GetState: TDockElement;
+begin
+  result := FState;
+end;
+
+class destructor TCustomDockForm.Destroy;
+begin
+  CS.Free;
+  TCustomDockForm.DockFormList.Free;
+end;
+
+procedure TCustomDockForm.InitWinHookMessage;
 begin
   if not assigned(FForm) then exit;
 
@@ -128,49 +148,79 @@ begin
   SetWindowLongPtr(FHwnd, GWL_WNDPROC, LONG_PTR(@DockFormWndProc));
 end;
 
-procedure TDockForm.SendMessageMoved;
+procedure TCustomDockForm.SendMessageDockForm;
 var
   MessageManager: TMessageManager;
-  LMessage: TMessage<UnicodeString>;
-  RDocks: TDocks;
-  LDocks: integer absolute RDocks;
+  LMessage: TDockMessageDock;
+  Value: TDockDock;
 begin
-  RDocks := FDocks;
-  MessageManager := TMessageManager.DefaultManager;
+  Value.Dock        := State;
+  Value.AccessDocks := Docks;
+  LMessage := TDockMessageDock.Create(Value);
 
-  LMessage := TMessage<UnicodeString>.Create(Format(TDockMessages.MOVED, [Screen.MousePos.X, Screen.MousePos.Y, LDocks]));
+  MessageManager := TMessageManager.DefaultManager;
   MessageManager.SendMessage(self, LMessage, true);
 end;
 
-procedure TDockForm.SendMesssageMoving;
+procedure TCustomDockForm.SendMessageMoved;
 var
   MessageManager: TMessageManager;
-  LMessage: TMessage<UnicodeString>;
-  RDocks: TDocks;
-  LDocks: integer absolute RDocks;
+  LMessage: TDockMessageMoved;
+  Value: TDockMove;
 begin
-  RDocks := FDocks;
-  MessageManager := TMessageManager.DefaultManager;
+  Value.MousePosition := Screen.MousePos;
+  Value.AccessDocks   := Docks;
+  LMessage := TDockMessageMoved.Create(Value);
 
-  LMessage := TMessage<UnicodeString>.Create(Format(TDockMessages.MOVING, [Screen.MousePos.X, Screen.MousePos.Y, LDocks]));
+  MessageManager := TMessageManager.DefaultManager;
   MessageManager.SendMessage(self, LMessage, true);
 end;
 
-procedure TDockForm.SetDocks(const Value: TDocks);
+procedure TCustomDockForm.SendMesssageMoving;
+var
+  MessageManager: TMessageManager;
+  LMessage: TDockMessageMoving;
+  Value: TDockMove;
+begin
+  Value.MousePosition := Screen.MousePos;
+  Value.AccessDocks   := Docks;
+  LMessage := TDockMessageMoving.Create(Value);
+
+  MessageManager := TMessageManager.DefaultManager;
+  MessageManager.SendMessage(self, LMessage, true);
+end;
+
+procedure TCustomDockForm.SetDocks(const Value: TDocks);
 begin
   FDocks := Value;
 end;
 
-procedure TDockForm.SetState(const Value: TDockState);
+procedure TCustomDockForm.SetState(const Value: TDockElement);
 begin
   FState := Value;
 end;
 
-class function TDockForm.TryGetDockForm(Hwnd: HWND; var DockForm: TDockForm): boolean;
+procedure TCustomDockForm.SubscribeFormCreated;
+var
+  MessageManager: TMessageManager;
+begin
+  MessageManager := TMessageManager.DefaultManager;
+
+  MessageManager.SubscribeToMessage(TFormsCreatedMessage, procedure(const Sender: TObject; const M: TMessage)
+  begin
+//    if not (self = Sender) then exit;
+
+    if not (State in [TDockElement.none])
+      then SendMessageDockForm;
+  end
+  );
+end;
+
+class function TCustomDockForm.TryGetDockForm(Hwnd: HWND; var DockForm: TCustomDockForm): boolean;
 begin
   CS.Enter;
   try
-    result := TDockForm.DockFormList.TryGetValue(Hwnd, DockForm);
+    result := TCustomDockForm.DockFormList.TryGetValue(Hwnd, DockForm);
   finally
     CS.Leave;
   end;

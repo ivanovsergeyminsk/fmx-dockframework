@@ -2,27 +2,26 @@ unit FMX.DockFramework.DockTypes;
 
 interface
 
+uses
+  System.Types;
+
 type
-  TDockToolElement = (none, Top, Left, Bottom, Right, Client);
+  TDockElement = (none, Top, Left, Bottom, Right, Client);
 
-  TDocks = set of TDockToolElement;
+  TDocks = set of TDockElement;
 
-  TDockState = (Undocking,
-                Docking);
-
-  TDockMessages = class
-  const
-    MOVING      = 'DOCK_MANAGER|MOVING|%f|%f|%d';
-    MOVED       = 'DOCK_MANAGER|MOVED|%f|%f|%d';
-    DOCK_NONE   = 'DOCK_FROM|DOCK|NONE';
-    DOCK_TOP    = 'DOCK_FROM|DOCK|TOP';
-    DOCK_LEFT   = 'DOCK_FROM|DOCK|LEFT';
-    DOCK_BOTTOM = 'DOCK_FROM|DOCK|BOTTOM';
-    DOCK_RIGHT  = 'DOCK_FROM|DOCK|RIGHT';
-    DOCK_CLIENT = 'DOCK_FROM|DOCK|CLIENT';
-
-//    CREATED = '';
+  TDockMove = packed record
+    MousePosition: TPointF;
+    AccessDocks: TDocks;
   end;
+
+  TDockDock = packed record
+    Dock: TDockElement;
+    AccessDocks: TDocks;
+  end;
+
+const
+  AllDocks = [low(TDockElement)..high(TDockElement)];
 
 implementation
 
