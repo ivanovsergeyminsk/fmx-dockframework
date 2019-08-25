@@ -13,8 +13,5 @@ uses
 begin
   Application.Initialize;
   Application.CreateForm(TViewMain, ViewMain);
-  Application.CreateForm(TFormSimple, FormSimple);
-  Application.CreateForm(TFormDock, FormDock);
-  Application.CreateForm(TFormDockDefault, FormDockDefault);
   Application.Run;
 end.

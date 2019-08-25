@@ -22,6 +22,7 @@ type
     class function TryGetDockForm(Hwnd: HWND; var DockForm: TCustomDockForm): boolean;
     class procedure AddOrSetDockForm(Hwnd: HWND; DockForm: TCustomDockForm);
   private
+    FisInit: boolean;
     FState: TDockElement;
     FDocks: TDocks;
     FForm: TForm;
@@ -99,14 +100,18 @@ end;
 constructor TCustomDockForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FisInit := false;
+
   if AOwner is TForm
     then FForm := AOwner as TForm
     else FForm := nil;
 
   if (not (csDesignInstance in ComponentState)) and (not (csDesigning in ComponentState)) then begin
+    if assigned(FForm) then
+      FForm.RecreateResources;
     InitWinHookMessage;
     TCustomDockForm.AddOrSetDockForm(FHwnd, self);
-    SubscribeFormCreated;
+//    SubscribeFormCreated;
   end;
 end;
 
@@ -206,12 +211,18 @@ var
 begin
   MessageManager := TMessageManager.DefaultManager;
 
-  MessageManager.SubscribeToMessage(TFormsCreatedMessage, procedure(const Sender: TObject; const M: TMessage)
+  MessageManager.SubscribeToMessage(TAfterCreateFormHandle, procedure(const Sender: TObject; const M: TMessage)
+  var
+    LState: TDockElement;
   begin
+    LState := State;
 //    if not (self = Sender) then exit;
 
-    if not (State in [TDockElement.none])
-      then SendMessageDockForm;
+    if (not (LState in [TDockElement.none])) and (not FisInit) then begin
+      FIsInit := true;
+//      FForm.Visible := false;
+      SendMessageDockForm;
+    end;
   end
   );
 end;

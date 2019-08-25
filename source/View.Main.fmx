@@ -1,7 +1,7 @@
 object ViewMain: TViewMain
   Left = 0
   Top = 0
-  Caption = 'Form1'
+  Caption = 'Dock Project'
   ClientHeight = 657
   ClientWidth = 1129
   FormFactor.Width = 320
@@ -17,7 +17,7 @@ object ViewMain: TViewMain
     TabOrder = 0
     object ButtonNewDockableForm: TButton
       Align = Left
-      Position.X = 145.000000000000000000
+      Position.X = 202.000000000000000000
       Size.Width = 145.000000000000000000
       Size.Height = 33.000000000000000000
       Size.PlatformDefault = False
@@ -27,6 +27,7 @@ object ViewMain: TViewMain
     end
     object ButtonNewSimpleForm: TButton
       Align = Left
+      Position.X = 57.000000000000000000
       Size.Width = 145.000000000000000000
       Size.Height = 33.000000000000000000
       Size.PlatformDefault = False
@@ -36,7 +37,7 @@ object ViewMain: TViewMain
     end
     object Button1: TButton
       Align = Left
-      Position.X = 290.000000000000000000
+      Position.X = 347.000000000000000000
       Size.Width = 145.000000000000000000
       Size.Height = 33.000000000000000000
       Size.PlatformDefault = False
@@ -44,15 +45,186 @@ object ViewMain: TViewMain
       Text = 'NewDockableDefaultForm'
       OnClick = Button1Click
     end
+    object Button2: TButton
+      Align = MostLeft
+      Size.Width = 57.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = 'additembutton'
+      TabOrder = 3
+      Text = 'Button2'
+    end
   end
   object DockManger1: TDockManger
     Align = Client
     Size.Width = 1129.000000000000000000
     Size.Height = 624.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 2
+    TabOrder = 6
     DockToolSize = 200.000000000000000000
-    DockToolColor = claSpringgreen
+    DockToolColor = claLime
+    DockToolBackgroundColor = claSlategray
     DockToolElement = none
+  end
+  object MultiView1: TMultiView
+    MasterButton = Button2
+    Mode = Drawer
+    Size.Width = 250.000000000000000000
+    Size.Height = 624.000000000000000000
+    Size.PlatformDefault = False
+    Visible = False
+    TabOrder = 4
+    object Button3: TButton
+      Align = Top
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 16
+      Text = 'Button3'
+    end
+    object Button4: TButton
+      Align = Top
+      Position.Y = 352.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 15
+      Text = 'Button3'
+    end
+    object Button5: TButton
+      Align = Top
+      Position.Y = 330.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 14
+      Text = 'Button3'
+    end
+    object Button6: TButton
+      Align = Top
+      Position.Y = 308.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 13
+      Text = 'Button3'
+    end
+    object Button7: TButton
+      Align = Top
+      Position.Y = 286.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 12
+      Text = 'Button3'
+    end
+    object Button8: TButton
+      Align = Top
+      Position.Y = 264.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 11
+      Text = 'Button3'
+    end
+    object Button9: TButton
+      Align = Top
+      Position.Y = 242.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 10
+      Text = 'Button3'
+    end
+    object Button10: TButton
+      Align = Top
+      Position.Y = 220.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 9
+      Text = 'Button3'
+    end
+    object Button11: TButton
+      Align = Top
+      Position.Y = 198.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 8
+      Text = 'Button3'
+    end
+    object Button12: TButton
+      Align = Top
+      Position.Y = 176.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 7
+      Text = 'Button3'
+    end
+    object Button13: TButton
+      Align = Top
+      Position.Y = 154.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 6
+      Text = 'Button3'
+    end
+    object Button14: TButton
+      Align = Top
+      Position.Y = 132.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      Text = 'Button3'
+    end
+    object Button15: TButton
+      Align = Top
+      Position.Y = 110.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      Text = 'Button3'
+    end
+    object Button16: TButton
+      Align = Top
+      Position.Y = 88.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      Text = 'Button3'
+    end
+    object Button17: TButton
+      Align = Top
+      Position.Y = 66.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Text = 'Button3'
+    end
+    object Button18: TButton
+      Align = Top
+      Position.Y = 44.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Button3'
+    end
+    object Button19: TButton
+      Align = Top
+      Position.Y = 22.000000000000000000
+      Size.Width = 250.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'Button3'
+    end
   end
 end
