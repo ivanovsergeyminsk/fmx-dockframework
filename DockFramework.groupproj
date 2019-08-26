@@ -6,7 +6,7 @@
         <Projects Include="FmxDock.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Dock.dproj">
+        <Projects Include="FMXDockFrameworkPackage.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -26,23 +26,23 @@
     <Target Name="FmxDock:Make">
         <MSBuild Projects="FmxDock.dproj" Targets="Make"/>
     </Target>
-    <Target Name="Dock">
-        <MSBuild Projects="Dock.dproj"/>
+    <Target Name="FMXDockFrameworkPackage">
+        <MSBuild Projects="FMXDockFrameworkPackage.dproj"/>
     </Target>
-    <Target Name="Dock:Clean">
-        <MSBuild Projects="Dock.dproj" Targets="Clean"/>
+    <Target Name="FMXDockFrameworkPackage:Clean">
+        <MSBuild Projects="FMXDockFrameworkPackage.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="Dock:Make">
-        <MSBuild Projects="Dock.dproj" Targets="Make"/>
+    <Target Name="FMXDockFrameworkPackage:Make">
+        <MSBuild Projects="FMXDockFrameworkPackage.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="FmxDock;Dock"/>
+        <CallTarget Targets="FmxDock;FMXDockFrameworkPackage"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="FmxDock:Clean;Dock:Clean"/>
+        <CallTarget Targets="FmxDock:Clean;FMXDockFrameworkPackage:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="FmxDock:Make;Dock:Make"/>
+        <CallTarget Targets="FmxDock:Make;FMXDockFrameworkPackage:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

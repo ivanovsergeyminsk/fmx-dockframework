@@ -1,4 +1,4 @@
-unit FMX.DockFramework.DockManger;
+unit FMX.DockFramework.DockManager;
 
 interface
 
@@ -9,7 +9,7 @@ uses
   FMX.DockFramework.FDockToolForm,
   FMX.DockFramework.DockTypes,
   FMX.DockFramework.DockMessages,
-  FMX.DockFramework.DockForm
+  FMX.DockFramework.DockProvider, FMX.Styles
   ;
 
 type
@@ -121,6 +121,20 @@ type
     property Docks: TDocks read FDocks write FDocks;
   end;
 
+
+  TDockTabItemClose = class(TTabItem)
+  private
+    FItemStyle: TControl;
+    FOnClose: TNotifyEvent;
+    procedure DoOnCloseClick(Sender: TObject);
+  protected
+    function GetStyleObject: TFmxObject; override;
+    procedure ApplyStyle; override;
+    procedure FreeStyle; override;
+  public
+    property OnCloseClick: TNotifyEvent read FOnClose write FOnClose;
+  end;
+
   TDockContent = class(TLayout)
   private
     FDockTab: TTabControl;
@@ -141,6 +155,9 @@ type
     procedure ControlsToDock(TabItem: TTabitem; Form: TForm);
     function GetCount: integer;
     procedure SetOnDock(const Value: TNotifyEvent);
+
+    procedure DeleteTabItem(TabItem: TTabItem);
+    procedure DoCloseContent(Sender: TObject);
   protected
     procedure DoUnDockTab(TabItem: TTabItem);
     procedure DoDockTab(Form: TForm);
@@ -173,6 +190,14 @@ type
     procedure SetPreviewState(const Value: TDockElement);
     function GetPreviewColor: TAlphaColor;
     procedure SetPreviewColor(const Value: TAlphaColor);
+    function GetDockBottomSize: single;
+    function GetDockLeftSize: single;
+    function GetDockRightSize: single;
+    function GetDockTopSize: single;
+    procedure SetDockBottomSize(const Value: single);
+    procedure SetDockLeftSize(const Value: single);
+    procedure SetDockRightSize(const Value: single);
+    procedure SetDockTopSize(const Value: single);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -181,9 +206,14 @@ type
 
     property Preview: TDockElement read FPreviewState write SetPreviewState;
     property PreviewColor: TAlphaColor read GetPreviewColor write SetPreviewColor;
+
+    property DockTopSize: single read GetDockTopSize write SetDockTopSize;
+    property DockLeftSize: single read GetDockLeftSize write SetDockLeftSize;
+    property DockBottomSize: single read GetDockBottomSize write SetDockBottomSize;
+    property DockRightSize: single read GetDockRightSize write SetDockRightSize;
   end;
 
-  TCustomDockManger = class(TLayout)
+  TCustomDockManager = class(TLayout)
   private
     { Private declarations }
     FContents: TDockContents;
@@ -219,7 +249,15 @@ type
     procedure CreateDockTool;
 
     function GetDockToolBackgroundColor: TAlphaColor;
-    procedure SetDockToolBackgroundColor(const Value: TAlphaColor);  protected
+    procedure SetDockToolBackgroundColor(const Value: TAlphaColor);
+    function GetDockBottomSize: single;
+    function GetDockLeftSize: single;
+    function GetDockRightSize: single;
+    function GetDockTopSize: single;
+    procedure SetDockBottomSize(const Value: single);
+    procedure SetDockLeftSize(const Value: single);
+    procedure SetDockRightSize(const Value: single);
+    procedure SetDockTopSize(const Value: single);
     property DockToolVisible: boolean read GetVisibleDockTool write SetVisibleDockTool;
   public
     constructor Create(AOwner: TComponent); override;
@@ -229,14 +267,23 @@ type
     property DockToolColor: TAlphaColor read GetDocToolColor write SetDockToolColor;
     property DockToolBackgroundColor: TAlphaColor read GetDockToolBackgroundColor write SetDockToolBackgroundColor;
     property DockToolElement: TDockElement read GetActiveElement write SetActiveElement;
+
+    property DockTopSize: single read GetDockTopSize write SetDockTopSize;
+    property DockLeftSize: single read GetDockLeftSize write SetDockLeftSize;
+    property DockBottomSize: single read GetDockBottomSize write SetDockBottomSize;
+    property DockRightSize: single read GetDockRightSize write SetDockRightSize;
   end;
 
-  TDockManger = class(TCustomDockManger)
+  TDockManager = class(TCustomDockManager)
   published
     property DockToolSize;
     property DockToolColor;// default TAlphaColorRec.Springgreen;
     property DockToolBackgroundColor;// default TAlphaColorRec.White;
     property DockToolElement;
+    property DockTopSize;
+    property DockLeftSize;
+    property DockBottomSize;
+    property DockRightSize;
   end;
 
 procedure Register;
@@ -244,11 +291,13 @@ procedure Register;
 implementation
 
 uses
-  FMX.Graphics;
+  FMX.Graphics, FMX.Dialogs, System.Math;
+
+  {$R *.win.res}
 
 procedure Register;
 begin
-  RegisterComponents('Dock Framework', [TDockManger]);
+  RegisterComponents('Dock Framework', [TDockManager]);
 end;
 
 procedure RearrangeColumnsAndRows(GridPanelLayout: TGridPanelLayout); overload;
@@ -305,7 +354,7 @@ end;
 
 {$REGION 'TCustomDockManger'}
 
-constructor TCustomDockManger.Create(AOwner: TComponent);
+constructor TCustomDockManager.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
@@ -328,7 +377,7 @@ begin
   end;
 end;
 
-procedure TCustomDockManger.CreateDockTool;
+procedure TCustomDockManager.CreateDockTool;
 begin
   FDockToolLayout := TLayout.Create(self);
   FDockToolLayout.Align   := TAlignLayout.Contents;
@@ -355,13 +404,13 @@ begin
 
 end;
 
-destructor TCustomDockManger.Destroy;
+destructor TCustomDockManager.Destroy;
 begin
 
   inherited Destroy;
 end;
 
-procedure TCustomDockManger.DoDock(const SelectedDock: TDockElement; Form: TForm);
+procedure TCustomDockManager.DoDock(const SelectedDock: TDockElement; Form: TForm);
 begin
   self.BeginUpdate;
   try
@@ -371,7 +420,7 @@ begin
   end;
 end;
 
-procedure TCustomDockManger.EventMoving(const X, Y: single; const Docks: TDocks);
+procedure TCustomDockManager.EventMoving(const X, Y: single; const Docks: TDocks);
 var
   Point: TPointF;
 begin
@@ -388,56 +437,96 @@ begin
   ShowPreview(X, Y);
 end;
 
-function TCustomDockManger.GetActiveElement: TDockElement;
+function TCustomDockManager.GetActiveElement: TDockElement;
 begin
   result := FDockTool.ActiveElement;
 end;
 
-function TCustomDockManger.GetDockToolBackgroundColor: TAlphaColor;
+function TCustomDockManager.GetDockBottomSize: single;
+begin
+  result := FContents.DockBottomSize;
+end;
+
+function TCustomDockManager.GetDockLeftSize: single;
+begin
+  result := FContents.DockLeftSize;
+end;
+
+function TCustomDockManager.GetDockRightSize: single;
+begin
+  result := FContents.DockRightSize;
+end;
+
+function TCustomDockManager.GetDockToolBackgroundColor: TAlphaColor;
 begin
   result := FDockTool.BackgroundColor;
 end;
 
-function TCustomDockManger.GetDockToolSize: single;
+function TCustomDockManager.GetDockToolSize: single;
 begin
   result := FDockTool.Width;
 end;
 
-function TCustomDockManger.GetDocToolColor: TAlphaColor;
+function TCustomDockManager.GetDockTopSize: single;
+begin
+  result := FContents.DockTopSize;
+end;
+
+function TCustomDockManager.GetDocToolColor: TAlphaColor;
 begin
   result := FDockTool.Color;
 end;
 
-function TCustomDockManger.GetVisibleDockTool: boolean;
+function TCustomDockManager.GetVisibleDockTool: boolean;
 begin
   result := FDockTool.Visible;
 end;
 
-procedure TCustomDockManger.SetActiveElement(const Value: TDockElement);
+procedure TCustomDockManager.SetActiveElement(const Value: TDockElement);
 begin
   FDockTool.ActiveElement := Value;
   FContents.Preview       := Value;
 end;
 
-procedure TCustomDockManger.SetDockToolBackgroundColor(
+procedure TCustomDockManager.SetDockBottomSize(const Value: single);
+begin
+  FContents.DockBottomSize := Value;
+end;
+
+procedure TCustomDockManager.SetDockLeftSize(const Value: single);
+begin
+  FContents.DockLeftSize := Value;
+end;
+
+procedure TCustomDockManager.SetDockRightSize(const Value: single);
+begin
+  FContents.DockRightSize := Value;
+end;
+
+procedure TCustomDockManager.SetDockToolBackgroundColor(
   const Value: TAlphaColor);
 begin
   FDockTool.BackgroundColor := Value;
 end;
 
-procedure TCustomDockManger.SetDockToolColor(const Value: TAlphaColor);
+procedure TCustomDockManager.SetDockToolColor(const Value: TAlphaColor);
 begin
   FDockTool.Color         := Value;
   FContents.PreviewColor  := Value;
 end;
 
-procedure TCustomDockManger.SetDockToolSize(const Value: single);
+procedure TCustomDockManager.SetDockToolSize(const Value: single);
 begin
   FDockTool.Width   := Value;
   FDockTool.Height  := FDockTool.Width;
 end;
 
-procedure TCustomDockManger.ShowPreview(const X, Y: single);
+procedure TCustomDockManager.SetDockTopSize(const Value: single);
+begin
+  FContents.DockTopSize := Value;
+end;
+
+procedure TCustomDockManager.ShowPreview(const X, Y: single);
 var
   MousePoint: TPointF;
 begin
@@ -470,12 +559,12 @@ begin
   DockToolElement := TDockElement.none;
 end;
 
-procedure TCustomDockManger.SetVisibleDockTool(const Value: boolean);
+procedure TCustomDockManager.SetVisibleDockTool(const Value: boolean);
 begin
   FDockTool.Visible := Value;
 end;
 
-procedure TCustomDockManger.SubscribeDockMessageDock;
+procedure TCustomDockManager.SubscribeDockMessageDock;
 var
   MessageManager: TMessageManager;
 begin
@@ -484,11 +573,11 @@ begin
   MessageManager.SubscribeToMessage(TDockMessageDock, procedure(const Sender: TObject; const M: TMessage)
   var
     Value: TDockDock;
-    DockForm: TDockForm;
+    DockForm: TDockProvider;
   begin
-    if not (Sender is TDockForm) then exit;
+    if not (Sender is TDockProvider) then exit;
 
-    DockForm := Sender as TDockForm;
+    DockForm := Sender as TDockProvider;
     Value := (M as TDockMessageDock).Value;
     if Value.Dock in Value.AccessDocks then
       DoDock(Value.Dock, DockForm.Form);
@@ -496,7 +585,7 @@ begin
   );
 end;
 
-procedure TCustomDockManger.SubscribeDockMessageMoved;
+procedure TCustomDockManager.SubscribeDockMessageMoved;
 var
   MessageManager: TMessageManager;
 begin
@@ -505,18 +594,18 @@ begin
   MessageManager.SubscribeToMessage(TDockMessageMoved, procedure(const Sender: TObject; const M: TMessage)
   var
     Value: TDockMove;
-    DockForm: TDockForm;
+    DockForm: TDockProvider;
   begin
-    if not (Sender is TDockForm) then exit;
+    if not (Sender is TDockProvider) then exit;
 
-    DockForm := Sender as TDockForm;
+    DockForm := Sender as TDockProvider;
     Value := (M as TDockMessageMoved).Value;
     EventMoved(Value.MousePosition.X, Value.MousePosition.Y, Value.AccessDocks, DockForm.Form);
   end
   );
 end;
 
-procedure TCustomDockManger.SubscribeDockMessageMoving;
+procedure TCustomDockManager.SubscribeDockMessageMoving;
 var
   MessageManager: TMessageManager;
 begin
@@ -532,14 +621,14 @@ begin
   );
 end;
 
-procedure TCustomDockManger.Subscribes;
+procedure TCustomDockManager.Subscribes;
 begin
   SubscribeDockMessageMoving;
   SubscribeDockMessageMoved;
   SubscribeDockMessageDock;
 end;
 
-procedure TCustomDockManger.EventMoved(const X, Y: single; const Docks: TDocks; Form: TForm);
+procedure TCustomDockManager.EventMoved(const X, Y: single; const Docks: TDocks; Form: TForm);
 var
   MousePoint: TPointF;
   SelelectedDock: TDockElement;
@@ -621,10 +710,30 @@ begin
   inherited Create(AOwner);
 
   FDockTab := TTabControl.Create(self);
-  FDockTab.Align   := TAlignLayout.Client;
-  FDockTab.Parent  := self;
-  FDockTab.Visible := true;
-  FDockTab.Stored  := false;
+  FDockTab.Align       := TAlignLayout.Client;
+  FDockTab.TabPosition := TTabPosition.Top;
+  FDockTab.TabHeight   := 26;
+  FDockTab.Parent      := self;
+  FDockTab.Visible     := true;
+  FDockTab.Stored      := false;
+end;
+
+procedure TDockContent.DeleteTabItem(TabItem: TTabItem);
+var
+  TabControl: TTabControl;
+  Idx: integer;
+begin
+  TabControl := TabItem.TabControl;
+  TabControl.ActiveTab := nil;
+
+  idx := TabItem.Index;
+  TabItem.Parent := nil;
+  TabItem.Free;
+
+  TabControl.ActiveTab := TabControl.Tabs[Min(idx, TabControl.TabCount-1)];
+
+  if TabControl.TabCount = 0 then
+    TabControl.Visible := false;
 end;
 
 destructor TDockContent.Destroy;
@@ -633,25 +742,43 @@ begin
   inherited Destroy;
 end;
 
-procedure TDockContent.DoDockTab(Form: TForm);
+procedure TDockContent.DoCloseContent(Sender: TObject);
 var
   TabItem: TTabItem;
+  Form: TForm;
+begin
+  TabItem := Sender as TTabItem;
+  Form := TForm(TabItem.Tag);
+  if Form.Close = TCloseAction.caNone then exit;
+
+  DeleteTabItem(TabItem);
+end;
+
+procedure TDockContent.DoDockTab(Form: TForm);
+var
+  TabItem: TDockTabItemClose;
 begin
   FDockTab.Visible := true;
 
-  TabItem := FDockTab.Add;
+  TabItem := FDockTab.Add(TDockTabItemClose) as TDockTabItemClose;
   TabItem.BeginUpdate;
   try
     TabItem.Tag  := integer(Form);
     TabItem.Text := Form.Caption;
-    TabItem.OnMouseDown := TabItemMouseDown;
-    TabItem.OnMouseUp   := TabItemMouseUp;
-    TabItem.OnMouseMove := TabItemMouseMove;
+//    TabItem.AutoSize := false;
+//    TabItem.Width         := 300;
+//    TabItem.Height        := 26;
+    TabItem.OnMouseDown   := TabItemMouseDown;
+    TabItem.OnMouseUp     := TabItemMouseUp;
+    TabItem.OnMouseMove   := TabItemMouseMove;
+    TabItem.OnCloseClick  := DoCloseContent;
 
     ControlsToDock(TabItem, Form);
   finally
     TabItem.EndUpdate;
   end;
+
+  FDockTab.ActiveTab := TabItem;
 
   if assigned(FOnDock) then
     FOnDock(self);
@@ -662,26 +789,12 @@ end;
 procedure TDockContent.DoUnDockTab(TabItem: TTabItem);
 var
   Form: TForm;
-  TabControl: TTabControl;
 begin
   Form := TForm(TabItem.Tag);
-  TabControl := TabItem.TabControl;
   self.BeginUpdate;
   try
     ControlsToForm(TabItem, Form);
-
-    if TabControl.TabCount - 1 > 0 then begin
-      if TabItem.Index > 0
-        then TabControl.ActiveTab := TabControl.Tabs[TabItem.Index-1]
-        else TabControl.ActiveTab := TabControl.Tabs[TabItem.Index+1];
-    end;
-
-    TabItem.Parent := nil;
-    TabItem.Free;
-
-    if TabControl.TabCount = 0 then
-      TabControl.Visible := false;
-
+    DeleteTabItem(TabItem);
     FisTabItemDrag := false;
   finally
     self.EndUpdate;
@@ -1206,9 +1319,49 @@ begin
     end;
 end;
 
+function TDockContents.GetDockBottomSize: single;
+begin
+  result := FDockBottom.Height;
+end;
+
+function TDockContents.GetDockLeftSize: single;
+begin
+  result := FDockLeft.Width;
+end;
+
+function TDockContents.GetDockRightSize: single;
+begin
+  result := FDockRight.Width;
+end;
+
+function TDockContents.GetDockTopSize: single;
+begin
+  result := FDockTop.Height;
+end;
+
 function TDockContents.GetPreviewColor: TAlphaColor;
 begin
   result := FPreview.Fill.Color;
+end;
+
+procedure TDockContents.SetDockBottomSize(const Value: single);
+begin
+  FDockBottom.Height := Value;
+end;
+
+procedure TDockContents.SetDockLeftSize(const Value: single);
+begin
+  FDockLeft.Width := Value;
+end;
+
+procedure TDockContents.SetDockRightSize(const Value: single);
+begin
+  FDockRight.Width := Value;
+end;
+
+procedure TDockContents.SetDockTopSize(const Value: single);
+begin
+  FDockTop.Height := Value;
 end;
 
 procedure TDockContents.SetPreviewColor(const Value: TAlphaColor);
@@ -1222,5 +1375,59 @@ begin
 end;
 
 {$ENDREGION}
+
+{ TDockTabItem }
+
+procedure TDockTabItemClose.ApplyStyle;
+const
+  ButtonClose = 'ButtonClose';
+var
+  Base: TFmxObject;
+  B: TFmxObject;
+begin
+  inherited;
+   B := ResourceLink.FindStyleResource('top');
+   if B is TControl then begin
+     FItemStyle := TControl(B);
+     FItemStyle.Visible := True;
+
+     Base := B.FindStyleResource(ButtonClose);
+     TButton(Base).OnClick := DoOnCloseClick;
+
+     B := ResourceLink.FindStyleResource('bottom');
+     if B is TControl then
+       TControl(B).Visible := False;
+   end;
+end;
+
+procedure TDockTabItemClose.DoOnCloseClick(Sender: TObject);
+begin
+  if assigned(FOnClose) then
+    FOnClose(self);
+end;
+
+procedure TDockTabItemClose.FreeStyle;
+begin
+  FItemStyle := nil;
+  inherited;
+end;
+
+function TDockTabItemClose.GetStyleObject: TFmxObject;
+const
+  Style = 'TabItemCloseStyle';
+var
+  Base: TFmxObject;
+begin
+  if StyleLookup.IsEmpty then begin
+
+    Base := TStyleStreaming.LoadFromResource(HInstance,
+      Style, RT_RCDATA);
+
+    if assigned(Base) then
+      exit(Base);
+  end;
+
+  result := inherited GetStyleObject;
+end;
 
 end.

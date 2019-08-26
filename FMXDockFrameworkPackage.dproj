@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{AFBE86CA-98A1-4B70-A7A7-3C891790E1C7}</ProjectGuid>
-        <MainSource>Dock.dpk</MainSource>
+        <MainSource>FMXDockFrameworkPackage.dpk</MainSource>
         <ProjectVersion>18.7</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
@@ -82,7 +82,7 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_Description>Dock Framework</DCC_Description>
-        <SanitizedProjectName>Dock</SanitizedProjectName>
+        <SanitizedProjectName>FMXDockFrameworkPackage</SanitizedProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
         <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
@@ -146,14 +146,16 @@
         </DelphiCompile>
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="fmx.dcp"/>
-        <DCCReference Include="source\FMX.DockFramework.DockManger.pas"/>
-        <DCCReference Include="source\FMX.DockFramework.DockForm.pas"/>
+        <DCCReference Include="source\FMX.DockFramework.DockManager.pas"/>
         <DCCReference Include="source\FMX.DockFramework.DockTypes.pas"/>
         <DCCReference Include="source\FMX.DockFramework.FDockToolForm.pas">
             <Form>FDockToolForm</Form>
-            <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="source\FMX.DockFramework.DockMessages.pas"/>
+        <DCCReference Include="source\FMX.DockFramework.DockProvider.pas"/>
+        <RcCompile Include="FMX.DockFramework.DockManager.win.rc">
+            <Form>FMX.DockFramework.DockManger.win.res</Form>
+        </RcCompile>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -172,7 +174,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">Dock.dpk</Source>
+                    <Source Name="MainSource">FMXDockFrameworkPackage.dpk</Source>
                 </Source>
             </Delphi.Personality>
             <Deployment Version="3">
@@ -196,9 +198,9 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\Dock.bpl" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\FMXDockFrameworkPackage.bpl" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>Dock.bpl</RemoteName>
+                        <RemoteName>FMXDockFrameworkPackage.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

@@ -91,12 +91,6 @@ object FormDockDefault: TFormDockDefault
       TabOrder = 0
     end
   end
-  object DockForm1: TDockForm
-    State = Left
-    Docks = [Top, Left, Bottom, Right, Client]
-    Left = 112
-    Top = 289
-  end
   object FDMemTable1: TFDMemTable
     Active = True
     FieldDefs = <
@@ -130,7 +124,7 @@ object FormDockDefault: TFormDockDefault
     Left = 424
     Top = 224
     Content = {
-      414442530F00BF363D030000FF00010001FF02FF03040016000000460044004D
+      414442530F00553E3D030000FF00010001FF02FF03040016000000460044004D
       0065006D005400610062006C006500310005000A0000005400610062006C0065
       00060000000000070000080032000000090000FF0AFF0B04000A000000540065
       0073007400310005000A000000540065007300740031000C00010000000E000D
@@ -215,5 +209,11 @@ object FormDockDefault: TFormDockDefault
       GridControl = Grid1
       Columns = <>
     end
+  end
+  object DockProvider1: TDockProvider
+    State = Client
+    Docks = [Top, Left, Bottom, Right, Client]
+    Left = 56
+    Top = 232
   end
 end

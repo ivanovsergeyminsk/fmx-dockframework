@@ -1,4 +1,4 @@
-package Dock;
+package FMXDockFrameworkPackage;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -33,10 +33,10 @@ requires
   fmx;
 
 contains
-  FMX.DockFramework.DockManger in 'source\FMX.DockFramework.DockManger.pas',
-  FMX.DockFramework.DockForm in 'source\FMX.DockFramework.DockForm.pas',
+  FMX.DockFramework.DockManager in 'source\FMX.DockFramework.DockManager.pas',
   FMX.DockFramework.DockTypes in 'source\FMX.DockFramework.DockTypes.pas',
   FMX.DockFramework.FDockToolForm in 'source\FMX.DockFramework.FDockToolForm.pas' {FDockToolForm},
-  FMX.DockFramework.DockMessages in 'source\FMX.DockFramework.DockMessages.pas';
+  FMX.DockFramework.DockMessages in 'source\FMX.DockFramework.DockMessages.pas',
+  FMX.DockFramework.DockProvider in 'source\FMX.DockFramework.DockProvider.pas';
 
 end.

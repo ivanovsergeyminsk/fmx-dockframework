@@ -5,19 +5,18 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.TabControl,
-  FMX.Layouts, FMX.DockFramework.DockForm, System.Rtti, FMX.Grid.Style,
+  FMX.Layouts, System.Rtti, FMX.Grid.Style,
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
   Data.Bind.EngExt, Fmx.Bind.DBEngExt, Fmx.Bind.Grid, System.Bindings.Outputs,
   Fmx.Bind.Editors, Data.DB, Data.Bind.Components, Data.Bind.Grid,
   Data.Bind.DBScope, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FMX.StdCtrls,
   FMX.Controls.Presentation, FMX.ScrollBox, FMX.Grid, FireDAC.Stan.StorageBin,
-  FMX.Objects;
+  FMX.Objects, FMX.DockFramework.DockProvider;
 
 type
   TFormDockDefault = class(TForm)
     Layout2: TLayout;
-    DockForm1: TDockForm;
     Grid1: TGrid;
     Button1: TButton;
     Button2: TButton;
@@ -34,6 +33,7 @@ type
     Rectangle1: TRectangle;
     StatusBar1: TStatusBar;
     Label1: TLabel;
+    DockProvider1: TDockProvider;
   private
     { Private declarations }
   public

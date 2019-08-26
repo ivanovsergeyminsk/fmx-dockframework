@@ -55,16 +55,20 @@ object ViewMain: TViewMain
       Text = 'Button2'
     end
   end
-  object DockManger1: TDockManger
+  object DockManager1: TDockManager
     Align = Client
     Size.Width = 1129.000000000000000000
     Size.Height = 624.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 6
+    TabOrder = 5
     DockToolSize = 200.000000000000000000
-    DockToolColor = claLime
+    DockToolColor = claSpringgreen
     DockToolBackgroundColor = claSlategray
     DockToolElement = none
+    DockTopSize = 50.000000000000000000
+    DockLeftSize = 50.000000000000000000
+    DockBottomSize = 50.000000000000000000
+    DockRightSize = 50.000000000000000000
   end
   object MultiView1: TMultiView
     MasterButton = Button2

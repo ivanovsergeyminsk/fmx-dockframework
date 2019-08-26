@@ -26,13 +26,34 @@ object FormDock: TFormDock
         Size.Height = 41.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
+        object Button1: TButton
+          Align = Right
+          Position.X = 480.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          Text = 'Button1'
+          OnClick = Button1Click
+        end
+        object Button2: TButton
+          Align = Right
+          Position.X = 560.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = 'Button1'
+          OnClick = Button2Click
+        end
       end
       object TabControl1: TTabControl
         Align = Client
+        FullSize = False
         Size.Width = 640.000000000000000000
         Size.Height = 439.000000000000000000
         Size.PlatformDefault = False
-        TabIndex = 1
+        TabIndex = 2
         TabOrder = 1
         TabPosition = PlatformDefault
         Sizes = (
@@ -43,24 +64,23 @@ object FormDock: TFormDock
           640s
           413s)
         object TabItem1: TTabItem
+          AutoSize = False
           CustomIcon = <
             item
             end>
           IsSelected = False
-          Size.Width = 69.000000000000000000
+          Size.Width = 100.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
           StyleLookup = ''
           TabOrder = 0
           Text = 'TabItem1'
-          ExplicitSize.cx = 69.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
         end
         object TabItem2: TTabItem
           CustomIcon = <
             item
             end>
-          IsSelected = True
+          IsSelected = False
           Size.Width = 69.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
@@ -86,7 +106,7 @@ object FormDock: TFormDock
           CustomIcon = <
             item
             end>
-          IsSelected = False
+          IsSelected = True
           Size.Width = 69.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
@@ -98,11 +118,6 @@ object FormDock: TFormDock
         end
       end
     end
-  end
-  object DockComponent: TDockForm
-    Docks = [Left, Bottom, Right, Client]
-    Left = 48
-    Top = 88
   end
   object FDMemTable1: TFDMemTable
     Active = True
@@ -137,7 +152,7 @@ object FormDock: TFormDock
     Left = 424
     Top = 224
     Content = {
-      414442530F001D383D030000FF00010001FF02FF03040016000000460044004D
+      414442530F00183D3D030000FF00010001FF02FF03040016000000460044004D
       0065006D005400610062006C006500310005000A0000005400610062006C0065
       00060000000000070000080032000000090000FF0AFF0B04000A000000540065
       0073007400310005000A000000540065007300740031000C00010000000E000D
@@ -222,5 +237,10 @@ object FormDock: TFormDock
       GridControl = Grid1
       Columns = <>
     end
+  end
+  object DockProvider1: TDockProvider
+    Docks = [Client]
+    Left = 48
+    Top = 97
   end
 end
