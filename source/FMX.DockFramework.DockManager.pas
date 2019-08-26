@@ -103,7 +103,8 @@ type
 
     function PictureDockToolToScreenRect(APictureDockTool: TPictureDockTool): TRectF;
 
-    procedure SetBackgroundColor(const Value: TAlphaColor);  public
+    procedure SetBackgroundColor(const Value: TAlphaColor);
+    procedure SetDocks(const Value: TDocks);
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
@@ -118,7 +119,7 @@ type
     property RightRect: TRectF read GetRightRect;
     property ClientRect: TRectF read GetClientRect;
 
-    property Docks: TDocks read FDocks write FDocks;
+    property Docks: TDocks read FDocks write SetDocks;
   end;
 
 
@@ -215,7 +216,6 @@ type
 
   TCustomDockManager = class(TLayout)
   private
-    { Private declarations }
     FContents: TDockContents;
 
     FDockToolForm: TFDockToolForm;
@@ -654,6 +654,7 @@ begin
   end else
     SelelectedDock := TDockElement.none;
 
+  DockToolElement := TDockElement.none;
   DoDock(SelelectedDock, Form);
 end;
 
@@ -803,10 +804,10 @@ begin
   if assigned(FOnDock) then
     FOnDock(self);
 
-  Form.Left := Trunc(Screen.MousePos.X-150);
-  Form.Top  := Trunc(Screen.MousePos.Y - 5);
   Form.Show;
   Form.StartWindowDrag;
+//  Form.Left := Trunc(Screen.MousePos.X-150);
+//  Form.Top  := Trunc(Screen.MousePos.Y - 5);
 end;
 
 function TDockContent.GetCount: integer;
@@ -960,6 +961,17 @@ begin
   FViewDockLeft.Color   := Color;
   FViewDockRight.Color  := Color;
   FViewDockClient.Color := Color;
+end;
+
+procedure TDockTool.SetDocks(const Value: TDocks);
+begin
+  FDocks := Value;
+
+  FViewDockTop.Visible    := TDockElement.Top in Value;
+  FViewDockLeft.Visible   := TDockElement.Left in Value;
+  FViewDockBottom.Visible := TDockElement.Bottom in Value;
+  FViewDockRight.Visible  := TDockElement.Right in Value;
+  FViewDockClient.Visible := TDockElement.Client in Value;
 end;
 
 procedure TDockTool.SetPictures;
@@ -1285,12 +1297,14 @@ begin
   FDockClient.OnDock  := DoOnDock;
 
   FPreview := TRectangle.Create(self);
-  FPreview.Align := TAlignLayout.Contents;
-  FPreview.Margins.Top    := 5;
-  FPreview.Margins.Left   := 5;
-  FPreview.Margins.Bottom := 5;
-  FPreview.Margins.Right  := 5;
-  FPreview.Opacity        := 0.3;
+  FPreview.Align := TAlignLayout.None;
+  FPreview.Visible        := false;
+  FPreview.Parent         := self;
+  FPreview.Padding.Top    := 5;
+  FPreview.Padding.Left   := 5;
+  FPreview.Padding.Bottom := 5;
+  FPreview.Padding.Right  := 5;
+  FPreview.Opacity        := 0.2;
   FPreview.Stored         := false;
 end;
 
@@ -1370,8 +1384,81 @@ begin
 end;
 
 procedure TDockContents.SetPreviewState(const Value: TDockElement);
+var
+  PreviewPosition: TPointF;
+  PreviewSize: TPointF;
 begin
   FPreviewState := Value;
+
+  if value in [TDockElement.none] then begin
+    FPreview.Visible := false;
+    exit;
+  end;
+
+  case Value of
+    TDockElement.Top:     begin
+                            PreviewPosition := TPointF.Create(0,0);
+                            PreviewSize     := TPointF.Create(self.Width, DockTopSize);
+                          end;
+    TDockElement.Left:    begin
+                            PreviewPosition := TPointF.Create(0,0);
+                            PreviewSize     := TPointF.Create(DockLeftSize, self.Height);
+
+                            if FDockTop.Visible then begin
+                              PreviewPosition.Y := PreviewPosition.Y + DockTopSize;
+                              PreviewSize.Y := PreviewSize.Y - DockTopSize;
+                            end;
+
+                            if FDockBottom.Visible then begin
+                              PreviewSize.Y := PreviewSize.Y - DockBottomSize;
+                            end;
+                          end;
+    TDockElement.Bottom:  begin
+                            PreviewPosition := TPointF.Create(0,self.Height - DockBottomSize);
+                            PreviewSize     := TPointF.Create(self.Width, DockBottomSize);
+                          end;
+    TDockElement.Right:   begin
+                            PreviewPosition := TPointF.Create(self.Width - DockRightSize,0);
+                            PreviewSize     := TPointF.Create(DockRightSize, self.Height);
+
+                            if FDockTop.Visible then begin
+                              PreviewPosition.Y := PreviewPosition.Y + DockTopSize;
+                              PreviewSize.Y := PreviewSize.Y - DockTopSize;
+                            end;
+
+                            if FDockBottom.Visible then begin
+                              PreviewSize.Y := PreviewSize.Y - DockBottomSize;
+                            end;
+                          end;
+    TDockElement.Client:  begin
+                            PreviewPosition := TPointF.Create(0,0);
+                            PreviewSize     := TPointF.Create(self.Width, self.Height);
+
+                            if FDockTop.Visible then begin
+                              PreviewPosition.Y := PreviewPosition.Y + DockTopSize;
+                              PreviewSize.Y := PreviewSize.Y - DockTopSize;
+                            end;
+
+                            if FDockBottom.Visible then begin
+                              PreviewSize.Y := PreviewSize.Y - DockBottomSize;
+                            end;
+
+                            if FDockLeft.Visible then begin
+                              PreviewPosition.X := PreviewPosition.X + DockLeftSize;
+                              PreviewSize.X := PreviewSize.X - DockLeftSize;
+                            end;
+
+                            if FDockRight.Visible then begin
+                              PreviewSize.X := PreviewSize.X - DockLeftSize;
+                            end;
+                          end;
+  end;
+
+  FPreview.Position.X := PreviewPosition.X + FPreview.Padding.Top;
+  FPreview.Position.Y := PreviewPosition.Y + FPreview.Padding.Left;
+  FPreview.Width      := PreviewSize.X - (FPreview.Padding.Right * 2);
+  FPreview.Height     := PreviewSize.Y - (FPreview.Padding.Bottom * 2);
+  FPreview.Visible    := true;
 end;
 
 {$ENDREGION}
