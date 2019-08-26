@@ -38,6 +38,8 @@ type
     Button18: TButton;
     Button19: TButton;
     DockManager1: TDockManager;
+    StatusBar1: TStatusBar;
+    Label1: TLabel;
     procedure ButtonNewDockableFormClick(Sender: TObject);
     procedure ButtonNewSimpleFormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -56,6 +58,8 @@ var
 
 implementation
 
+uses
+  FMX.DockFramework.DockTypes;
 {$R *.fmx}
 
 procedure TViewMain.Button1Click(Sender: TObject);
@@ -86,8 +90,26 @@ begin
 end;
 
 procedure TViewMain.FormCreate(Sender: TObject);
+var
+  Form: TFormDockDefault;
+  K: integer;
 begin
   I := 0;
+  for K := 1 to 5 do begin
+    inc(I);
+    Application.CreateForm(TFormDockDefault, Form);
+    Form.Caption             := 'Docktable Default'+I.ToString;
+    Form.Label1.Text         := Form.Caption;
+    Form.DockProvider1.State := TDockElement(K);
+    Form.Show;
+
+    inc(I);
+    Application.CreateForm(TFormDockDefault, Form);
+    Form.Caption             := 'Docktable Default'+I.ToString;
+    Form.Label1.Text         := Form.Caption;
+    Form.DockProvider1.State := TDockElement(K);
+    Form.Show;
+  end;
 end;
 
 initialization
