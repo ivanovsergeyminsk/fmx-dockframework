@@ -34,6 +34,7 @@ type
     StatusBar1: TStatusBar;
     Label1: TLabel;
     DockProvider1: TDockProvider;
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -46,5 +47,14 @@ var
 implementation
 
 {$R *.fmx}
+
+procedure TFormDockDefault.FormCreate(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := 0 to 2000 do begin
+    FDMemTable1.AppendRecord([I, 'test'+I.ToString, 25.5, true]);
+  end;
+end;
 
 end.

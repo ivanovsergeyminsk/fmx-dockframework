@@ -27,7 +27,7 @@ object FormSimple: TFormSimple
       Size.Width = 849.000000000000000000
       Size.Height = 384.000000000000000000
       Size.PlatformDefault = False
-      TabIndex = 1
+      TabIndex = 2
       TabOrder = 1
       TabPosition = PlatformDefault
       Sizes = (
@@ -57,7 +57,7 @@ object FormSimple: TFormSimple
         CustomIcon = <
           item
           end>
-        IsSelected = True
+        IsSelected = False
         Size.Width = 69.000000000000000000
         Size.Height = 26.000000000000000000
         Size.PlatformDefault = False
@@ -71,7 +71,7 @@ object FormSimple: TFormSimple
         CustomIcon = <
           item
           end>
-        IsSelected = False
+        IsSelected = True
         Size.Width = 69.000000000000000000
         Size.Height = 26.000000000000000000
         Size.PlatformDefault = False
@@ -80,6 +80,126 @@ object FormSimple: TFormSimple
         Text = 'TabItem3'
         ExplicitSize.cx = 69.000000000000000000
         ExplicitSize.cy = 26.000000000000000000
+      end
+    end
+  end
+  object Popup1: TPopup
+    Position.X = 712.000000000000000000
+    Position.Y = 32.000000000000000000
+    Size.Width = 201.000000000000000000
+    Size.Height = 449.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    object ListBox1: TListBox
+      Align = Client
+      Size.Width = 201.000000000000000000
+      Size.Height = 449.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      DisableFocusEffect = True
+      DefaultItemStyles.ItemStyle = ''
+      DefaultItemStyles.GroupHeaderStyle = ''
+      DefaultItemStyles.GroupFooterStyle = ''
+      Viewport.Width = 197.000000000000000000
+      Viewport.Height = 445.000000000000000000
+      object ListBoxItem1: TListBoxItem
+        TabOrder = 0
+        Text = 'ListBoxItem1'
+      end
+      object ListBoxItem2: TListBoxItem
+        Position.Y = 19.000000000000000000
+        TabOrder = 1
+        Text = 'ListBoxItem2'
+      end
+      object ListBoxItem3: TListBoxItem
+        Position.Y = 38.000000000000000000
+        TabOrder = 2
+        Text = 'ListBoxItem3'
+      end
+      object ListBoxItem4: TListBoxItem
+        Position.Y = 57.000000000000000000
+        TabOrder = 3
+        Text = 'ListBoxItem4'
+      end
+      object ListBoxItem5: TListBoxItem
+        Position.Y = 76.000000000000000000
+        TabOrder = 4
+        Text = 'ListBoxItem5'
+      end
+      object ListBoxItem6: TListBoxItem
+        Position.Y = 95.000000000000000000
+        TabOrder = 5
+        Text = 'ListBoxItem6'
+      end
+      object ListBoxItem7: TListBoxItem
+        Position.Y = 114.000000000000000000
+        TabOrder = 6
+        Text = 'ListBoxItem7'
+      end
+      object ListBoxItem8: TListBoxItem
+        Position.Y = 133.000000000000000000
+        TabOrder = 7
+        Text = 'ListBoxItem8'
+      end
+      object ListBoxItem9: TListBoxItem
+        Position.Y = 152.000000000000000000
+        TabOrder = 8
+        Text = 'ListBoxItem9'
+      end
+      object ListBoxItem10: TListBoxItem
+        Position.Y = 171.000000000000000000
+        TabOrder = 9
+        Text = 'ListBoxItem10'
+      end
+      object ListBoxItem11: TListBoxItem
+        Position.Y = 190.000000000000000000
+        TabOrder = 10
+        Text = 'ListBoxItem11'
+      end
+      object ListBoxItem12: TListBoxItem
+        Position.Y = 209.000000000000000000
+        TabOrder = 11
+        Text = 'ListBoxItem12'
+      end
+      object ListBoxItem13: TListBoxItem
+        Position.Y = 228.000000000000000000
+        TabOrder = 12
+        Text = 'ListBoxItem13'
+      end
+      object ListBoxItem14: TListBoxItem
+        Position.Y = 247.000000000000000000
+        TabOrder = 13
+        Text = 'ListBoxItem14'
+      end
+      object ListBoxItem15: TListBoxItem
+        Position.Y = 266.000000000000000000
+        TabOrder = 14
+        Text = 'ListBoxItem15'
+      end
+      object ListBoxItem16: TListBoxItem
+        Position.Y = 285.000000000000000000
+        TabOrder = 15
+        Text = 'ListBoxItem16'
+      end
+      object ListBoxItem17: TListBoxItem
+        Position.Y = 304.000000000000000000
+        TabOrder = 16
+        Text = 'ListBoxItem17'
+      end
+      object ListBoxItem18: TListBoxItem
+        Position.Y = 323.000000000000000000
+        TabOrder = 17
+        Text = 'ListBoxItem18'
+      end
+      object ListBoxItem19: TListBoxItem
+        Position.Y = 342.000000000000000000
+        TabOrder = 18
+        Text = 'ListBoxItem19'
+      end
+      object ListBoxItem20: TListBoxItem
+        Position.Y = 361.000000000000000000
+        TabOrder = 19
+        Text = 'ListBoxItem20'
       end
     end
   end

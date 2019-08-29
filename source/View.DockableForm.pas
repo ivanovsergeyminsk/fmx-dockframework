@@ -36,6 +36,12 @@ type
     DockProvider1: TDockProvider;
     Button1: TButton;
     Button2: TButton;
+    TabItem4: TTabItem;
+    TabItem5: TTabItem;
+    TabItem6: TTabItem;
+    TabItem7: TTabItem;
+    TabItem8: TTabItem;
+    TabItem9: TTabItem;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
   private

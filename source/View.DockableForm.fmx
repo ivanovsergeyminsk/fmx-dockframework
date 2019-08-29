@@ -9,113 +9,209 @@ object FormDock: TFormDock
   FormFactor.Devices = [Desktop]
   DesignerMasterStyle = 0
   object Rectangle1: TRectangle
-    Align = Contents
+    Align = MostTop
     Fill.Color = claBurlywood
     Size.Width = 640.000000000000000000
-    Size.Height = 480.000000000000000000
+    Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
-    object Layout1: TLayout
+    object Layout2: TLayout
       Align = Client
       Size.Width = 640.000000000000000000
-      Size.Height = 480.000000000000000000
+      Size.Height = 57.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
-      object Layout2: TLayout
-        Align = MostTop
-        Size.Width = 640.000000000000000000
-        Size.Height = 41.000000000000000000
+      object Button1: TButton
+        Align = Right
+        Position.X = 480.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Button1'
+        OnClick = Button1Click
+      end
+      object Button2: TButton
+        Align = Right
+        Position.X = 560.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        object Button1: TButton
-          Align = Right
-          Position.X = 480.000000000000000000
-          Size.Width = 80.000000000000000000
-          Size.Height = 41.000000000000000000
+        Text = 'Button1'
+        OnClick = Button2Click
+      end
+    end
+  end
+  object Layout1: TLayout
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 423.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    object TabControl1: TTabControl
+      Align = Client
+      FullSize = False
+      Size.Width = 640.000000000000000000
+      Size.Height = 423.000000000000000000
+      Size.PlatformDefault = False
+      TabIndex = 1
+      TabOrder = 0
+      TabPosition = PlatformDefault
+      Sizes = (
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s
+        640s
+        397s)
+      object TabItem1: TTabItem
+        AutoSize = False
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 100.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem1'
+      end
+      object TabItem2: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = True
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem2'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+        object Grid1: TGrid
+          Align = Client
+          CanFocus = True
+          ClipChildren = True
+          Size.Width = 640.000000000000000000
+          Size.Height = 397.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
-          Text = 'Button1'
-          OnClick = Button1Click
-        end
-        object Button2: TButton
-          Align = Right
-          Position.X = 560.000000000000000000
-          Size.Width = 80.000000000000000000
-          Size.Height = 41.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 0
-          Text = 'Button1'
-          OnClick = Button2Click
+          RowCount = 6
+          Viewport.Width = 636.000000000000000000
+          Viewport.Height = 372.000000000000000000
         end
       end
-      object TabControl1: TTabControl
-        Align = Client
-        FullSize = False
-        Size.Width = 640.000000000000000000
-        Size.Height = 439.000000000000000000
+      object TabItem3: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
         Size.PlatformDefault = False
-        TabIndex = 2
-        TabOrder = 1
-        TabPosition = PlatformDefault
-        Sizes = (
-          640s
-          413s
-          640s
-          413s
-          640s
-          413s)
-        object TabItem1: TTabItem
-          AutoSize = False
-          CustomIcon = <
-            item
-            end>
-          IsSelected = False
-          Size.Width = 100.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'TabItem1'
-        end
-        object TabItem2: TTabItem
-          CustomIcon = <
-            item
-            end>
-          IsSelected = False
-          Size.Width = 69.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'TabItem2'
-          ExplicitSize.cx = 69.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object Grid1: TGrid
-            Align = Client
-            CanFocus = True
-            ClipChildren = True
-            Size.Width = 640.000000000000000000
-            Size.Height = 413.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 1
-            RowCount = 6
-            Viewport.Width = 636.000000000000000000
-            Viewport.Height = 388.000000000000000000
-          end
-        end
-        object TabItem3: TTabItem
-          CustomIcon = <
-            item
-            end>
-          IsSelected = True
-          Size.Width = 69.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'TabItem3'
-          ExplicitSize.cx = 69.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-        end
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem3'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+      end
+      object TabItem4: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem4'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+      end
+      object TabItem5: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem5'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+      end
+      object TabItem6: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem6'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+      end
+      object TabItem7: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem7'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+      end
+      object TabItem8: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem8'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
+      end
+      object TabItem9: TTabItem
+        CustomIcon = <
+          item
+          end>
+        IsSelected = False
+        Size.Width = 69.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'TabItem9'
+        ExplicitSize.cx = 69.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
       end
     end
   end
@@ -152,7 +248,7 @@ object FormDock: TFormDock
     Left = 424
     Top = 224
     Content = {
-      414442530F00183D3D030000FF00010001FF02FF03040016000000460044004D
+      414442530F0010363D030000FF00010001FF02FF03040016000000460044004D
       0065006D005400610062006C006500310005000A0000005400610062006C0065
       00060000000000070000080032000000090000FF0AFF0B04000A000000540065
       0073007400310005000A000000540065007300740031000C00010000000E000D
@@ -240,7 +336,8 @@ object FormDock: TFormDock
   end
   object DockProvider1: TDockProvider
     Docks = [Client]
-    Left = 48
-    Top = 97
+    Container = Layout1
+    Left = 72
+    Top = 273
   end
 end

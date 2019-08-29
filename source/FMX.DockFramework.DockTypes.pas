@@ -6,9 +6,9 @@ uses
   System.Types;
 
 type
-  TDockElement = (none, Top, Left, Bottom, Right, Client);
+  TDockPosition = (none, Top, Left, Client, Right, Bottom);
 
-  TDocks = set of TDockElement;
+  TDocks = set of TDockPosition;
 
   TDockMove = packed record
     MousePosition: TPointF;
@@ -16,12 +16,12 @@ type
   end;
 
   TDockDock = packed record
-    Dock: TDockElement;
+    Dock: TDockPosition;
     AccessDocks: TDocks;
   end;
 
 const
-  AllDocks = [low(TDockElement)..high(TDockElement)];
+  AllDocks = [low(TDockPosition)..high(TDockPosition)];
 
 implementation
 

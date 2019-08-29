@@ -7,36 +7,41 @@ uses
   System.Generics.Collections, System.SyncObjs,
   Winapi.Windows,
   FMX.DockFramework.DockTypes,
-  FMX.DockFramework.DockMessages
+  FMX.DockFramework.DockMessages, FMX.Types
   ;
 
 type
   TCustomDockProvider = class(TComponent)
   private
-    class function TryGetDockForm(Hwnd: HWND; var DockForm: TCustomDockProvider): boolean;
-    class procedure AddOrSetDockForm(Hwnd: HWND; DockForm: TCustomDockProvider);
+    class function TryGetDockForm(Hwnd: HWND; var Provider: TCustomDockProvider): boolean;
+    class procedure AddOrSetDockForm(Hwnd: HWND; Provider: TCustomDockProvider);
+    class procedure RemoveWinHook(Provider: TCustomDockProvider);
   private
     FisInit: boolean;
-    FState: TDockElement;
+    FState: TDockPosition;
     FDocks: TDocks;
     FForm: TForm;
     FBorderStyle: TFmxFormBorderStyle;
+    FContainer: TFMXObject;
 
     FHwnd : HWND;
     FOldWndProc : LONG_PTR;
     procedure InitWinHookMessage;
+    procedure FreeWinHookMessage;
 
     procedure SendMesssageMoving;
     procedure SendMessageMoved;
     procedure SendMessageDock;
 
-    procedure SubscribeFormCreated;
+//    procedure SubscribeFormCreated;
     procedure SubscribeFormActivate;
-  protected
-    function GetState: TDockElement;
+    function GetContainer: TFMXObject;
+
+    procedure SetContainer(const Value: TFMXObject);  protected
+    function GetState: TDockPosition;
     function GetDocks: TDocks;
 
-    procedure SetState(const Value: TDockElement);
+    procedure SetState(const Value: TDockPosition);
     procedure SetDocks(const Value: TDocks);
   public
     constructor Create(AOwner: TComponent); override;
@@ -44,8 +49,9 @@ type
 
     property Form: TForm read FForm;
   published
-    property State: TDockElement read GetState write SetState;
+    property State: TDockPosition read GetState write SetState;
     property Docks: TDocks read GetDocks write SetDocks;
+    property Container: TFMXObject read GetContainer write SetContainer;
   end;
 
   TCustomDockContainer = class(TCustomDockProvider)
@@ -54,8 +60,9 @@ type
 
   TDockProvider = class(TCustomDockProvider)
   published
-    property State default TDockElement.none;
+    property State default TDockPosition.none;
     property Docks default AllDocks;
+    property Container default nil;
   end;
 
 procedure Register;
@@ -94,11 +101,11 @@ end;
 
 { TDockForm }
 
-class procedure TCustomDockProvider.AddOrSetDockForm(Hwnd: HWND; DockForm: TCustomDockProvider);
+class procedure TCustomDockProvider.AddOrSetDockForm(Hwnd: HWND; Provider: TCustomDockProvider);
 begin
   CS.Enter;
   try
-    DockFormList.AddOrSetValue(Hwnd, DockForm);
+    DockFormList.AddOrSetValue(Hwnd, Provider);
   finally
     CS.Leave;
   end;
@@ -116,21 +123,31 @@ begin
   FBorderStyle := FForm.BorderStyle;
   if (not (csDesignInstance in ComponentState)) and (not (csDesigning in ComponentState)) then begin
     SubscribeFormActivate;
-//    InitWinHookMessage;
-
     //Пересоздание формы необходима для перехвата WM
-    SubscribeFormCreated;
-    if assigned(FForm) then begin
-      THackForm(FForm).Recreate;
-    end;
+//    SubscribeFormCreated;
+//    if assigned(FForm) then begin
+//      THackForm(FForm).Realign;
+//    end;
   end;
 end;
 
 
 destructor TCustomDockProvider.Destroy;
 begin
-
+  FreeWinHookMessage;
+  FContainer := nil;
+  FForm := nil;
   inherited Destroy;
+end;
+
+procedure TCustomDockProvider.FreeWinHookMessage;
+begin
+  TCustomDockProvider.RemoveWinHook(self);
+end;
+
+function TCustomDockProvider.GetContainer: TFMXObject;
+begin
+ result := FContainer;
 end;
 
 function TCustomDockProvider.GetDocks: TDocks;
@@ -138,7 +155,7 @@ begin
   result := FDocks;
 end;
 
-function TCustomDockProvider.GetState: TDockElement;
+function TCustomDockProvider.GetState: TDockPosition;
 begin
   result := FState;
 end;
@@ -152,6 +169,18 @@ begin
   TCustomDockProvider.AddOrSetDockForm(FHwnd, self);
 
   SetWindowLongPtr(FHwnd, GWL_WNDPROC, LONG_PTR(@DockFormWndProc));
+end;
+
+class procedure TCustomDockProvider.RemoveWinHook(
+  Provider: TCustomDockProvider);
+begin
+  CS.Enter;
+  try
+    if DockFormList.ContainsKey(Provider.FHwnd) then
+      DockFormList.Remove(Provider.FHwnd);
+  finally
+    CS.Leave;
+  end;
 end;
 
 procedure TCustomDockProvider.SendMessageDock;
@@ -196,19 +225,26 @@ begin
   MessageManager.SendMessage(self, LMessage, true);
 end;
 
+procedure TCustomDockProvider.SetContainer(const Value: TFMXObject);
+begin
+  FContainer := Value;
+end;
+
 procedure TCustomDockProvider.SetDocks(const Value: TDocks);
 begin
   FDocks := Value;
 end;
 
-procedure TCustomDockProvider.SetState(const Value: TDockElement);
+procedure TCustomDockProvider.SetState(const Value: TDockPosition);
 begin
   FState := Value;
 
-  if not (FState in [TDockElement.none]) then
-    FForm.BorderStyle := TFmxFormBorderStyle.None
-  else
-    FForm.BorderStyle := FBorderStyle;
+  if (not (csDesignInstance in ComponentState)) and (not (csDesigning in ComponentState)) then begin
+    if not (FState in [TDockPosition.none]) then
+      FForm.BorderStyle := TFmxFormBorderStyle.None
+    else
+      FForm.BorderStyle := FBorderStyle;
+  end;
 end;
 
 procedure TCustomDockProvider.SubscribeFormActivate;
@@ -224,39 +260,44 @@ begin
     Form := TFormActivateMessage(M).Value;
     if not (FForm = Form) then exit;
 
-    if (not (State in [TDockElement.none])) and (not FisInit) then begin
-      FisInit := true;
+    if (not (State in [TDockPosition.none])) and (not FisInit) then begin
       SendMessageDock;
+      Form.BorderStyle := FBorderStyle;
+      Form.RecreateResources;
     end;
 
-    FForm.BorderStyle := FBorderStyle;
+    if (not FisInit) then begin
+      InitWinHookMessage;
+    end;
+
+    FisInit := true;
   end
   );
 end;
 
-procedure TCustomDockProvider.SubscribeFormCreated;
-var
-  MessageManager: TMessageManager;
-begin
-  MessageManager := TMessageManager.DefaultManager;
+//procedure TCustomDockProvider.SubscribeFormCreated;
+//var
+//  MessageManager: TMessageManager;
+//begin
+//  MessageManager := TMessageManager.DefaultManager;
+//
+//  MessageManager.SubscribeToMessage(TAfterCreateFormHandle, procedure(const Sender: TObject; const M: TMessage)
+//  var
+//    Form: TCommonCustomForm;
+//  begin
+//    Form := TAfterCreateFormHandle(M).Value;
+//    if not (FForm = Form) then exit;
+//
+//    InitWinHookMessage;
+//  end
+//  );
+//end;
 
-  MessageManager.SubscribeToMessage(TAfterCreateFormHandle, procedure(const Sender: TObject; const M: TMessage)
-  var
-    Form: TCommonCustomForm;
-  begin
-    Form := TAfterCreateFormHandle(M).Value;
-    if not (FForm = Form) then exit;
-
-    InitWinHookMessage;
-  end
-  );
-end;
-
-class function TCustomDockProvider.TryGetDockForm(Hwnd: HWND; var DockForm: TCustomDockProvider): boolean;
+class function TCustomDockProvider.TryGetDockForm(Hwnd: HWND; var Provider: TCustomDockProvider): boolean;
 begin
   CS.Enter;
   try
-    result := DockFormList.TryGetValue(Hwnd, DockForm);
+    result := DockFormList.TryGetValue(Hwnd, Provider);
   finally
     CS.Leave;
   end;

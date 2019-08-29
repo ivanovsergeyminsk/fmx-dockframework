@@ -10,7 +10,8 @@ uses
 
 
   View.DockableForm, View.SimpleForm,
-  FMX.MultiView,   View.DockableFormDefault, FMX.DockFramework.DockManager
+  FMX.MultiView,   View.DockableFormDefault, FMX.DockFramework.DockManager,
+  FMX.Effects
   ;
 type
   TViewMain = class(TForm)
@@ -37,9 +38,10 @@ type
     Button17: TButton;
     Button18: TButton;
     Button19: TButton;
-    DockManager1: TDockManager;
     StatusBar1: TStatusBar;
     Label1: TLabel;
+    StyleBook1: TStyleBook;
+    DockManager1: TDockManager;
     procedure ButtonNewDockableFormClick(Sender: TObject);
     procedure ButtonNewSimpleFormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -62,6 +64,7 @@ uses
   FMX.DockFramework.DockTypes;
 {$R *.fmx}
 
+
 procedure TViewMain.Button1Click(Sender: TObject);
 begin
   inc(I);
@@ -83,10 +86,15 @@ procedure TViewMain.ButtonNewSimpleFormClick(Sender: TObject);
 var
   Form2: TFormSimple;
 begin
-  Inc(I);
-  Application.CreateForm(TFormSimple, Form2);
-  Form2.Caption := 'Simple'+I.ToString;
-  Form2.Show;
+//  Inc(I);
+//  Application.CreateForm(TFormSimple, Form2);
+//  Form2.Caption := 'Simple'+I.ToString;
+//  Form2.Show;
+  if DockManager1.ActiveForm = nil
+    then ShowMessage('Not Active')
+    else ShowMessage(DockManager1.ActiveForm.Caption);
+
+  ShowMessage(DockManager1.TabItemStyleLookup);
 end;
 
 procedure TViewMain.FormCreate(Sender: TObject);
@@ -95,21 +103,21 @@ var
   K: integer;
 begin
   I := 0;
-  for K := 1 to 5 do begin
-    inc(I);
-    Application.CreateForm(TFormDockDefault, Form);
-    Form.Caption             := 'Docktable Default'+I.ToString;
-    Form.Label1.Text         := Form.Caption;
-    Form.DockProvider1.State := TDockElement(K);
-    Form.Show;
-
-    inc(I);
-    Application.CreateForm(TFormDockDefault, Form);
-    Form.Caption             := 'Docktable Default'+I.ToString;
-    Form.Label1.Text         := Form.Caption;
-    Form.DockProvider1.State := TDockElement(K);
-    Form.Show;
-  end;
+//  for K := 1 to 5 do begin
+//    inc(I);
+//    Application.CreateForm(TFormDockDefault, Form);
+//    Form.Caption             := 'Docktable Default'+I.ToString;
+//    Form.Label1.Text         := Form.Caption;
+//    Form.DockProvider1.State := TDockElement(K);
+//    Form.Show;
+//
+//    inc(I);
+//    Application.CreateForm(TFormDockDefault, Form);
+//    Form.Caption             := 'Docktable Default'+I.ToString;
+//    Form.Label1.Text         := Form.Caption;
+//    Form.DockProvider1.State := TDockElement(K);
+//    Form.Show;
+//  end;
 end;
 
 initialization

@@ -153,9 +153,6 @@
         </DCCReference>
         <DCCReference Include="source\FMX.DockFramework.DockMessages.pas"/>
         <DCCReference Include="source\FMX.DockFramework.DockProvider.pas"/>
-        <RcCompile Include="FMX.DockFramework.DockManager.win.rc">
-            <Form>FMX.DockFramework.DockManger.win.res</Form>
-        </RcCompile>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
